@@ -5,12 +5,10 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { ArrowLeft, Loader2, Package, User, MapPin, Truck } from "lucide-react";
-
-
+ 
+ 
 type OrderStatus =
   | "pending"
   | "confirmed"
@@ -18,8 +16,8 @@ type OrderStatus =
   | "delivered"
   | "cancelled"
   | "reviewed";
-
-
+ 
+ 
 interface OrderData {
   id: string;
   order_number?: string;
@@ -27,7 +25,7 @@ interface OrderData {
   receiver_phone?: string | null;
   carrier?: string | null;
   expiry_date?: string | null;
-
+ 
   user_id: string;
   status: OrderStatus;
   total_price: number;
@@ -39,7 +37,7 @@ interface OrderData {
   confirmed_at: string | null;
   shipped_at: string | null;
   delivered_at: string | null;
-
+ 
   products: {
     id: string;
     name: string;
@@ -47,15 +45,15 @@ interface OrderData {
     unit: string;
     image_url: string | null;
   } | null;
-
+ 
   profiles: {
     full_name: string;
     phone: string | null;
   } | null;
-
+ 
   is_reservation?: boolean;
 }
-
+ 
 const OrderDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -64,41 +62,41 @@ const OrderDetail = () => {
   const [order, setOrder] = useState<OrderData | null>(null);
   const [trackingNumber, setTrackingNumber] = useState("");
   const [carrier, setCarrier] = useState("");
-
-
+ 
+ 
   useEffect(() => {
   if (!id) return;
   loadOrder(id);
 }, [id]);
-
+ 
   const loadOrder = async (orderId: string) => {
     try {
       
       const { data: { session } } = await supabase.auth.getSession();
-
+ 
       if (!session) {
         navigate("/auth/login");
         return;
       }
-
+ 
       const { data: farm, error: farmError } = await supabase
         .from("farm_profiles")
         .select("id")
         .eq("user_id", session.user.id)
         .maybeSingle();
-
+ 
       if (farmError) throw farmError;
-
+ 
       if (!farm) {
         toast.error("No farm profile found");
         navigate("/dashboard");
         return;
       }
-
+ 
       console.log("ORDER ID:", orderId);
       console.log("SESSION USER ID:", session.user.id);
       console.log("FARM PROFILE ID:", farm.id);
-
+ 
       const { data: orderData, error: orderError } = await supabase
         .from("orders")
         .select(`
@@ -131,18 +129,18 @@ const OrderDetail = () => {
             phone
           )
         `)
-
+ 
         
-
+ 
         .eq("id", orderId)
         .eq("farm_id", farm.id)
         .maybeSingle();
       if (orderData) {
         setOrder(orderData as unknown as OrderData);
         setTrackingNumber(orderData.tracking_number || "");
-        setCarrier(orderData.carrier || ""); 
+        setCarrier(orderData.carrier || "");
       } else {
-        const { data: resData } = await supabase
+        const { data: resData, error: resError } = await supabase
           .from("reservations")
           .select(`
             id,
@@ -154,18 +152,17 @@ const OrderDetail = () => {
             receiver_name,
             receiver_phone,
             delivery_address,
-            expiry_date,
+            expected_delivery_date,
             products:product_id (id, name, price_per_unit, unit, image_url),
             profiles:user_id (full_name, phone)
           `)
-
           .eq("id", id)
           .maybeSingle();
-          if (orderError) {
+        if (orderError) {
             console.error("ORDER QUERY ERROR:", orderError);
             throw orderError;
           }
-
+ 
         if (resData) {
           const formattedRes: OrderData = {
             id: resData.id,
@@ -194,7 +191,7 @@ const OrderDetail = () => {
           return;
         }
       }
-
+ 
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "Failed to load order";
       toast.error(message);
@@ -203,60 +200,60 @@ const OrderDetail = () => {
       setLoading(false);
     }
   };
-
+ 
   const updateStatus = async (newStatus: OrderStatus) => {
     if (!order) return;
-
+ 
     setUpdating(true);
-
+ 
     try {
       if (newStatus === "confirmed" && order.is_reservation) {
         const { data, error } = await supabase.rpc("confirm_reservation", {
           p_reservation_id: order.id,
         });
-
+ 
         if (error) throw error;
-
+ 
         if (data) {
           toast.success("Order confirmed");
           navigate(`/farm/orders/${data}`); // ✅ ไปหน้า order ใหม่
         }
-
+ 
         return;
       }
-
+ 
       const updates: Record<string, unknown> = { status: newStatus };
-
+ 
       if (newStatus === "confirmed") {
-
+ 
   updates.confirmed_at = new Date().toISOString();
-
+ 
       } else if (newStatus === "shipped") {
         if (!trackingNumber.trim()) {
           toast.error("Please enter a tracking number");
           setUpdating(false);
           return;
         }
-        if (!carrier.trim()) { 
+        if (!carrier.trim()) {
           toast.error("Please enter carrier");
           setUpdating(false);
           return;
         }
         updates.shipped_at = new Date().toISOString();
         updates.tracking_number = trackingNumber.trim();
-        updates.carrier = carrier.trim(); 
+        updates.carrier = carrier.trim();
       } else if (newStatus === "delivered") {
         updates.delivered_at = new Date().toISOString();
       }
-
-
+ 
+ 
       const { error } = await supabase
         .from("orders")
         .update(updates)
         .eq("id", order.id);
-
+ 
       if (error) throw error;
-
+ 
       toast.success(`Order ${newStatus}`);
       await loadOrder(order.id);
     } catch (error: unknown) {
@@ -266,7 +263,7 @@ const OrderDetail = () => {
       setUpdating(false);
     }
   };
-
+ 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
       pending: "bg-yellow-100 text-yellow-800",
@@ -278,7 +275,7 @@ const OrderDetail = () => {
     };
     return colors[status] || "bg-gray-100 text-gray-800";
   };
-
+ 
   const getStatusLabel = (status: string) => {
   const labels: Record<string, string> = {
     pending: "รอดำเนินการ",
@@ -290,7 +287,7 @@ const OrderDetail = () => {
   };
   return labels[status] || status;
 };
-
+ 
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-hero flex items-center justify-center">
@@ -298,17 +295,17 @@ const OrderDetail = () => {
       </div>
     );
   }
-
+ 
   if (!order) return null;
-
+ 
   return (
     <div className="min-h-screen bg-gradient-hero">
       <nav className="border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center gap-4">
           {/* ✨ ปรับจุดนี้เพื่อให้ย้อนกลับไปหน้าก่อนหน้าได้แม่นยำขึ้นครับ */}
-          <Button 
-            variant="ghost" 
-            size="icon" 
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={() => {
               if (window.history.length > 1) {
                 navigate(-1);
@@ -327,14 +324,14 @@ const OrderDetail = () => {
           </div>
         </div>
       </nav>
-
+ 
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-3xl mx-auto space-y-6">
           <Card className="p-6">
             <div className="flex items-start justify-between mb-4">
               <div> <h3 className="font-semibold"> {order.order_number ? "หมายเลขออเดอร์" : "หมายเลขการจอง"} </h3>
               <p className="font-mono"> {order.order_number ?? order.id} </p></div>
-
+ 
               <span className={`px-3 py-1 rounded-full text-sm ${getStatusColor(order.status)}`}>
                 {getStatusLabel(order.status)}
               </span>
@@ -350,7 +347,7 @@ const OrderDetail = () => {
             )}
             </p>
           </Card>
-
+ 
           <Card className="p-6">
             <div className="flex items-center gap-3 mb-4">
               <User className="w-5 h-5 text-muted-foreground" />
@@ -359,10 +356,10 @@ const OrderDetail = () => {
             <div className="space-y-2">
               <p><strong>ชื่อผู้รับ:</strong>{" "}{order.receiver_name ?? order.profiles?.full_name ?? "N/A"}</p>
               <p><strong>เบอร์โทรศัพท์:</strong>{" "}{order.receiver_phone ?? order.profiles?.phone ?? "N/A"}</p>
-
+ 
             </div>
           </Card>
-
+ 
           <Card className="p-6">
             <div className="flex items-center gap-3 mb-4">
               <MapPin className="w-5 h-5 text-muted-foreground" />
@@ -381,7 +378,7 @@ const OrderDetail = () => {
               )}
             </div>
           </Card>
-
+ 
           <Card className="p-6">
             <div className="flex items-center gap-3 mb-4">
               <Package className="w-5 h-5 text-muted-foreground" />
@@ -404,14 +401,14 @@ const OrderDetail = () => {
               <p className="font-semibold">฿{order.total_price.toLocaleString()}</p>
             </div>
           </Card>
-
+ 
           {order.status !== "delivered" && order.status !== "cancelled" && order.status !== "reviewed" && (
             <Card className="p-6">
               <div className="flex items-center gap-3 mb-4">
                 <Truck className="w-5 h-5 text-muted-foreground" />
                 <h3 className="font-semibold">อัปเดตสถานะการจอง</h3>
               </div>
-
+ 
               {order.status === "pending" && (
                 <Button
                   onClick={() => updateStatus("confirmed")}
@@ -422,7 +419,7 @@ const OrderDetail = () => {
                   ยืนยันการจอง
                 </Button>
               )}
-
+ 
               {order.status === "confirmed" && (
                 <div className="space-y-4">
                   <div className="space-y-2">
@@ -452,7 +449,7 @@ const OrderDetail = () => {
                   </Button>
                 </div>
               )}
-
+ 
               {order.status === "shipped" && (
                 <Button
                   onClick={() => updateStatus("delivered")}
@@ -463,7 +460,7 @@ const OrderDetail = () => {
                   ยืนยันว่าจัดส่งสำเร็จ
                 </Button>
               )}
-
+ 
             </Card>
           )}
         </div>
@@ -471,5 +468,7 @@ const OrderDetail = () => {
     </div>
   );
 };
-
+ 
 export default OrderDetail;
+ 
+ 
