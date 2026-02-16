@@ -8,10 +8,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { ArrowLeft, Loader2, User, Store, AlertCircle } from "lucide-react";
-
+import { ArrowLeft, Loader2, User, Store } from "lucide-react";
+ 
 /* ---------- Types ---------- */
-
+ 
 interface Profile {
   id: string;
   full_name: string;
@@ -19,7 +19,7 @@ interface Profile {
   address: string | null;
   avatar_url: string | null;
 }
-
+ 
 interface FarmProfile {
   id: string;
   farm_name: string;
@@ -27,64 +27,63 @@ interface FarmProfile {
   farm_description: string | null;
   farm_image_url: string | null;
 }
-
+ 
 /* ---------- Component ---------- */
-
+ 
 const UpdateProfile = () => {
   const navigate = useNavigate();
-
+ 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-
+ 
   const [profile, setProfile] = useState<Profile | null>(null);
   const [farmProfile, setFarmProfile] = useState<FarmProfile | null>(null);
   const [isFarm, setIsFarm] = useState(false);
-
+ 
   const [emailForm, setEmailForm] = useState({ email: "" });
-
+ 
   const [profileForm, setProfileForm] = useState({
     full_name: "",
     phone: "",
     address: "",
   });
-
+ 
   const [farmForm, setFarmForm] = useState({
     farm_name: "",
     farm_location: "",
     farm_description: "",
   });
-
+ 
   /* ---------- Load Profiles ---------- */
-
+ 
   useEffect(() => {
     loadProfiles();
   }, []);
-
+ 
   const loadProfiles = async () => {
     try {
       const {
         data: { session },
       } = await supabase.auth.getSession();
-
+ 
       if (!session) {
         navigate("/auth/login", { replace: true });
         return;
       }
-
       setEmailForm({
         email: session.user.email || "",
       });
-
+ 
       /* ---------- USER PROFILE ---------- */
-
+ 
       const { data: profileData, error: profileError } = await supabase
         .from("profiles")
         .select("*")
         .eq("id", session.user.id)
         .maybeSingle();
-
+ 
       if (profileError) throw profileError;
-
+ 
       if (!profileData) {
         const { error: insertError } = await supabase
           .from("profiles")
@@ -92,15 +91,15 @@ const UpdateProfile = () => {
             id: session.user.id,
             full_name: "",
           });
-
+ 
         if (insertError) throw insertError;
-
+ 
         const { data: newProfile } = await supabase
           .from("profiles")
           .select("*")
           .eq("id", session.user.id)
           .single();
-
+ 
         setProfile(newProfile);
       } else {
         setProfile(profileData);
@@ -110,21 +109,21 @@ const UpdateProfile = () => {
           address: profileData.address || "",
         });
       }
-
+      
       /* ---------- FARM PROFILE ---------- */
-
+ 
       const { data: farmData, error: farmError } = await supabase
         .from("farm_profiles")
         .select("*")
         .eq("user_id", session.user.id)
         .maybeSingle();
-
+ 
       if (farmError) throw farmError;
-
+ 
       if (farmData) {
         setFarmProfile(farmData);
         setIsFarm(true);
-
+ 
         setFarmForm({
           farm_name: farmData.farm_name || "",
           farm_location: farmData.farm_location || "",
@@ -139,19 +138,19 @@ const UpdateProfile = () => {
       setLoading(false);
     }
   };
-
+ 
   /* ---------- SAVE USER PROFILE ---------- */
-
+ 
   const saveProfile = async () => {
     if (!profile) return;
-
+ 
     if (!profileForm.full_name.trim()) {
       toast.error("Name is required");
       return;
     }
-
+ 
     setSaving(true);
-
+ 
     try {
       const { error } = await supabase
         .from("profiles")
@@ -161,9 +160,9 @@ const UpdateProfile = () => {
           address: profileForm.address.trim() || null,
         })
         .eq("id", profile.id);
-
+ 
       if (error) throw error;
-
+ 
       toast.success("Profile updated");
       navigate(-1);
     } catch (e: any) {
@@ -172,54 +171,49 @@ const UpdateProfile = () => {
       setSaving(false);
     }
   };
-
+ 
   /* ---------- SAVE EMAIL ---------- */
-
+ 
   const saveEmail = async () => {
     if (!emailForm.email.trim()) {
       toast.error("กรุณากรอกอีเมล");
       return;
     }
-
+ 
     setSaving(true);
-
+ 
     try {
       const { error } = await supabase.auth.updateUser({
         email: emailForm.email.trim(),
       });
-
+ 
       if (error) throw error;
-
-      // แก้ไขข้อความแจ้งเตือนให้ระบุว่าต้องกดยืนยันทั้ง 2 เมล
-      toast.success("ส่งคำขอเปลี่ยนอีเมลแล้ว!", {
-        description: "สำคัญ: คุณต้องกดยืนยันลิงก์ในอีเมล 'ทั้งที่เมลเดิม' และ 'เมลใหม่' การเปลี่ยนจึงจะสำเร็จครับ",
-        duration: 10000,
-      });
-
+ 
+      toast.success("กรุณาตรวจสอบอีเมลเพื่อยืนยัน");
     } catch (e: any) {
       toast.error(e.message || "แก้ไขอีเมลไม่ได้");
     } finally {
       setSaving(false);
     }
   };
-
+ 
   /* ---------- SAVE FARM PROFILE ---------- */
-
+ 
   const saveFarmProfile = async () => {
     if (!farmProfile) return;
-
+ 
     if (!farmForm.farm_name.trim()) {
       toast.error("Farm name is required");
       return;
     }
-
+ 
     if (!farmForm.farm_location.trim()) {
       toast.error("Farm location is required");
       return;
     }
-
+ 
     setSaving(true);
-
+ 
     try {
       const { error } = await supabase
         .from("farm_profiles")
@@ -229,9 +223,9 @@ const UpdateProfile = () => {
           farm_description: farmForm.farm_description.trim() || null,
         })
         .eq("id", farmProfile.id);
-
+ 
       if (error) throw error;
-
+ 
       toast.success("Farm profile updated");
       navigate(-1);
     } catch (e: any) {
@@ -240,9 +234,9 @@ const UpdateProfile = () => {
       setSaving(false);
     }
   };
-
+ 
   /* ---------- Loading ---------- */
-
+ 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -250,9 +244,9 @@ const UpdateProfile = () => {
       </div>
     );
   }
-
+ 
   /* ---------- UI ---------- */
-
+ 
   return (
     <div className="min-h-screen bg-gradient-hero">
       <nav className="border-b bg-background/80 backdrop-blur sticky top-0 z-50">
@@ -263,10 +257,14 @@ const UpdateProfile = () => {
           <h1 className="text-2xl font-bold">แก้ไขโปรไฟล์</h1>
         </div>
       </nav>
-
+ 
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-2xl mx-auto">
+ 
           <Tabs defaultValue="profile">
+ 
+            {/* ---------- TAB HEADER ---------- */}
+ 
             <TabsList
               className={`grid mb-6 ${
                 isFarm ? "grid-cols-3" : "grid-cols-2"
@@ -275,16 +273,18 @@ const UpdateProfile = () => {
               <TabsTrigger value="profile">
                 <User className="w-4 h-4 mr-2" /> ข้อมูลส่วนตัว
               </TabsTrigger>
-
+ 
               {isFarm && (
                 <TabsTrigger value="farm">
                   <Store className="w-4 h-4 mr-2" /> ข้อมูลฟาร์ม
                 </TabsTrigger>
               )}
-
+ 
               <TabsTrigger value="email">📧 แก้ไขอีเมล</TabsTrigger>
             </TabsList>
-
+ 
+            {/* ---------- PROFILE TAB ---------- */}
+ 
             <TabsContent value="profile">
               <Card className="p-6 space-y-6">
                 <div>
@@ -299,7 +299,7 @@ const UpdateProfile = () => {
                     }
                   />
                 </div>
-
+ 
                 <div>
                   <Label>เบอร์โทร</Label>
                   <Input
@@ -312,7 +312,7 @@ const UpdateProfile = () => {
                     }
                   />
                 </div>
-
+ 
                 <div>
                   <Label>ที่อยู่</Label>
                   <Textarea
@@ -326,7 +326,7 @@ const UpdateProfile = () => {
                     }
                   />
                 </div>
-
+ 
                 <Button
                   onClick={saveProfile}
                   disabled={saving}
@@ -337,7 +337,9 @@ const UpdateProfile = () => {
                 </Button>
               </Card>
             </TabsContent>
-
+ 
+            {/* ---------- FARM TAB ---------- */}
+ 
             {isFarm && (
               <TabsContent value="farm">
                 <Card className="p-6 space-y-6">
@@ -353,7 +355,7 @@ const UpdateProfile = () => {
                       }
                     />
                   </div>
-
+ 
                   <div>
                     <Label>ที่อยู่ *</Label>
                     <Input
@@ -366,7 +368,7 @@ const UpdateProfile = () => {
                       }
                     />
                   </div>
-
+ 
                   <div>
                     <Label>รายละเอียดฟาร์ม</Label>
                     <Textarea
@@ -380,7 +382,7 @@ const UpdateProfile = () => {
                       }
                     />
                   </div>
-
+ 
                   <Button
                     onClick={saveFarmProfile}
                     disabled={saving}
@@ -392,22 +394,13 @@ const UpdateProfile = () => {
                 </Card>
               </TabsContent>
             )}
-
+ 
+            {/* ---------- EMAIL TAB ---------- */}
+ 
             <TabsContent value="email">
               <Card className="p-6 space-y-6">
-                {/* แก้ไข UI กล่องคำแนะนำให้ระบุเรื่อง 2 เมลชัดเจน */}
-                <div className="bg-amber-50 border border-amber-200 p-4 rounded-xl flex gap-3">
-                  <AlertCircle className="w-5 h-5 text-amber-600 shrink-0" />
-                  <div className="text-xs text-amber-800 space-y-2">
-                    <p className="font-bold">ขั้นตอนการเปลี่ยนอีเมลเพื่อความปลอดภัย:</p>
-                    <p>1. ระบบจะส่งลิงก์ยืนยันไปที่ <span className="font-bold underline text-amber-900 text-[11px]">ทั้งอีเมลเดิม และอีเมลใหม่</span></p>
-                    <p>2. คุณต้องกดปุ่มยืนยันให้ครบ <span className="font-bold underline text-amber-900 text-[11px]">ทั้งสองอีเมล</span> การเปลี่ยนถึงจะสำเร็จ</p>
-                    <p>3. หากยืนยันไม่ครบ บัญชีจะยังคงใช้เมลเดิมต่อไปเพื่อความปลอดภัยนะคะ</p>
-                  </div>
-                </div>
-
                 <div>
-                  <Label>อีเมลปัจจุบัน / อีเมลใหม่</Label>
+                  <Label>อีเมล</Label>
                   <Input
                     type="email"
                     value={emailForm.email}
@@ -416,22 +409,25 @@ const UpdateProfile = () => {
                     }
                   />
                 </div>
-
+ 
                 <Button
                   onClick={saveEmail}
                   disabled={saving}
                   className="w-full"
                 >
                   {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                  บันทึกและส่งลิงก์ยืนยัน
+                  บันทึกอีเมล
                 </Button>
               </Card>
             </TabsContent>
+ 
           </Tabs>
         </div>
       </div>
     </div>
   );
 };
-
+ 
 export default UpdateProfile;
+ 
+ 
