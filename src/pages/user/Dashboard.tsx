@@ -123,21 +123,21 @@ const Dashboard = () => {
   };
 
   const handleUpgradeToFarm = async () => {
-  try {
-    const { error } = await supabase.rpc("upgrade_to_farm");
+    try {
+      const { error } = await supabase.rpc("upgrade_to_farm");
 
-    if (error) {
-      toast.error(error.message);
-      return;
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
+
+      toast.success("อัปเกรดเป็นบัญชีฟาร์มเรียบร้อย");
+      navigate("/farm/dashboard");
+
+    } catch {
+      toast.error("การอัปเกรดล้มเหลว");
     }
-
-    toast.success("อัปเกรดเป็นบัญชีฟาร์มเรียบร้อย");
-    navigate("/farm/dashboard");
-
-  } catch {
-    toast.error("การอัปเกรดล้มเหลว");
-  }
-};
+  };
 
   /* ✨ จุดที่แก้ไข: เปลี่ยนข้อความสถานะเป็นภาษาไทย */
   const statusLabels: Record<string, string> = {
@@ -190,7 +190,7 @@ const Dashboard = () => {
 
           <ActionCard
             icon={<ShoppingBag />}
-            title="ออเดอร์"
+            title="ออเดอร์ของฉัน"
             subtitle={`${orders.length} ออเดอร์`}
             onClick={() => navigate("/dashboard/orders")}
           />
@@ -273,9 +273,8 @@ const ActionCard = ({
 }) => (
   <Card
     onClick={onClick}
-    className={`p-6 cursor-pointer transition hover:shadow-md ${
-      highlight ? "border-primary bg-primary/5" : ""
-    }`}
+    className={`p-6 cursor-pointer transition hover:shadow-md ${highlight ? "border-primary bg-primary/5" : ""
+      }`}
   >
     <div className="flex items-center gap-4">
       <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">

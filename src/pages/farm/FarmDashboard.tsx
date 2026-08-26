@@ -259,9 +259,9 @@ const FarmDashboard = () => {
         <div className="mt-12">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-semibold">สินค้าในร้าน</h3>
-            <Button 
-              size="sm" 
-              variant="outline" 
+            <Button
+              size="sm"
+              variant="outline"
               onClick={() => navigate("/farm/products")}
             >
               ดูทั้งหมด
