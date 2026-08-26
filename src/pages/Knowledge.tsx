@@ -5,7 +5,7 @@ import { Search, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import Navbar from "@/components/Navbar"; // ✅ นำเข้า Navbar ตัวกลาง
+import Navbar from "@/components/layout/Navbar";
 
 interface Cultivar {
   id: string;

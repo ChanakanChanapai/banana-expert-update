@@ -20,6 +20,7 @@ import { Label } from "@/components/ui/label";
 
 import { toast } from "sonner";
 import { ArrowLeft, Loader2 } from "lucide-react";
+import Navbar from "@/components/layout/Navbar";
 
 /* ---------- Types ---------- */
 
@@ -202,19 +203,20 @@ const ProductDetail = () => {
   }
 
   const useProfile = addressType === "saved";
+  const finalReceiverName = useProfile ? (savedFullName || null) : receiverName.trim();
+  const finalReceiverPhone = useProfile ? (savedPhone || null) : receiverPhone.trim();
+  const deliveryAddress = useProfile ? (savedAddress || null) : newAddress.trim();
 
-const deliveryAddress =
-  useProfile ? savedAddress : newAddress;
+  const { error } = await supabase.rpc("reserve_v5", {
+    p_product_id: product.id,
+    p_quantity: quantity,
+    p_note: note.trim() || null,
+    p_use_profile: useProfile,
+    p_receiver_name: finalReceiverName,
+    p_receiver_phone: finalReceiverPhone,
+    p_delivery_address: deliveryAddress,
+  });
 
-const { error } = await supabase.rpc("reserve_v5", {
-  p_product_id: product.id,
-  p_quantity: quantity,
-  p_note: note,
-  p_use_profile: useProfile,
-  p_receiver_name: receiverName,
-  p_receiver_phone: receiverPhone,
-  p_delivery_address: deliveryAddress,
-});
 
   if (error) {
     toast.error(
@@ -246,7 +248,8 @@ const { error } = await supabase.rpc("reserve_v5", {
   const totalPrice = quantity * product.price_per_unit;
 
   return (
-    <div className="min-h-screen bg-muted/30">
+    <div className="min-h-screen bg-muted/30 pb-12">
+      <Navbar />
       <div className="container max-w-5xl mx-auto px-4 py-6">
         <Button variant="ghost" onClick={() => navigate(-1)}>
           <ArrowLeft className="w-4 h-4 mr-2" /> ย้อนกลับ

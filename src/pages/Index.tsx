@@ -2,19 +2,32 @@ import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
-  Upload, Sparkles, Book, Store, Utensils,
+  Upload, Book, Store, Utensils,
   Sprout, Droplets, BookOpen, Search, RefreshCw,
-  ArrowRight, ShieldCheck // ✅ เพิ่ม ShieldCheck เข้ามา
+  ArrowRight, ShieldCheck, Cpu, HeartPulse
 } from "lucide-react";
-import { useNavigate, useNavigationType } from "react-router-dom";
+import { useNavigate, useNavigationType, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import heroImage from "@/assets/hero-bananas.jpg";
 import { supabase } from "@/integrations/supabase/client";
-import Navbar from "@/components/Navbar"; 
+import Navbar from "@/components/layout/Navbar"; 
 
 const Index = () => {
   const navigate = useNavigate();
   const navType = useNavigationType();
+  const location = useLocation();
+
+  // Scroll to #detection when navigated from another page via ?scrollTo=detection
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get("scrollTo") === "detection") {
+      setTimeout(() => {
+        document.getElementById("detection")?.scrollIntoView({ behavior: "smooth" });
+      }, 300);
+      // Clean up URL without reload
+      navigate("/", { replace: true });
+    }
+  }, [location.search]);
 
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>("");
@@ -200,46 +213,45 @@ const Index = () => {
         <div className="absolute inset-0 opacity-10">
           <img src={heroImage} alt="Fresh bananas background" className="w-full h-full object-cover" />
         </div>
-        <div className="container mx-auto px-4 py-20 relative z-10 text-center">
-          <h2 className="text-5xl md:text-6xl font-bold mb-6 leading-tight">
-            AI-Powered Thai Banana
-            <span className="block bg-gradient-primary bg-clip-text text-transparent">
+        <div className="container mx-auto px-4 pt-8 pb-4 md:pt-10 md:pb-5 relative z-10 text-center">
+          <h2 className="text-3xl md:text-5xl font-bold mb-3 leading-tight">
+            AI-Powered Thai Banana{" "}
+            <span className="bg-gradient-primary bg-clip-text text-transparent">
               Variety Identification
             </span>
           </h2>
-          <p className="text-xl text-muted-foreground mb-8">
+          <p className="text-base md:text-lg text-muted-foreground mb-4 max-w-2xl mx-auto">
             ระบบจำแนกสายพันธุ์กล้วย พร้อมระบบจองผลผลิตจากกล้วยเชื่อมต่อโดยตรงกับเกษตกรฟาร์มกล้วยไทย
           </p>
         </div>
       </section>
 
       {/* 🟢 Main Detection Section */}
-      <section className="container mx-auto px-4 py-16">
-        <Card className="max-w-4xl mx-auto p-8 shadow-card bg-white/90 backdrop-blur">
-          <div className="text-center mb-8 flex flex-col items-center">
-            <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full mb-4">
-              <span className="relative flex h-3 w-3">
+      <section id="detection" className="container mx-auto px-4 pt-2 pb-12">
+        <Card className="max-w-4xl mx-auto p-6 md:p-8 shadow-card bg-white/90 backdrop-blur">
+          <div className="text-center mb-6 flex flex-col items-center">
+            <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-3.5 py-1.5 rounded-full mb-3">
+              <span className="relative flex h-2.5 w-2.5">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-3 w-3 bg-primary"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary"></span>
               </span>
-              <Sparkles className="w-4 h-4" />
-              <span className="text-sm font-medium">AI-Powered Detection</span>
+              <span className="text-xs md:text-sm font-medium">AI-Powered Detection</span>
             </div>
-            <h3 className="text-3xl font-bold mb-2">ระบบจำแนกสายพันธุ์กล้วย</h3>
+            <h3 className="text-2xl md:text-3xl font-bold mb-1">ระบบจำแนกสายพันธุ์กล้วย</h3>
             {previewUrl && (
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={resetDetection}
-                className="text-muted-foreground hover:text-destructive mt-2"
+                className="text-muted-foreground hover:text-destructive mt-1"
               >
                 <RefreshCw className="w-4 h-4 mr-2" /> ล้างข้อมูล/สแกนใหม่
               </Button>
             )}
           </div>
 
-          <div className="space-y-6">
-            <div className="border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-primary transition-colors cursor-pointer group">
+          <div className="space-y-5">
+            <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-primary transition-colors cursor-pointer group">
               <input
                 type="file"
                 id="image-upload"
@@ -253,10 +265,10 @@ const Index = () => {
                     <img src={previewUrl} alt="Preview" className="max-h-80 mx-auto rounded-lg mb-4 shadow-md transition-transform group-hover:scale-105" />
                   </div>
                 ) : (
-                  <div className="py-12">
-                    <Upload className="w-16 h-16 mx-auto text-muted-foreground mb-4 group-hover:text-primary transition-colors" />
-                    <p className="text-lg font-medium mb-2 text-gray-700">Click to upload image</p>
-                    <p className="text-sm text-muted-foreground">PNG, JPG up to 10MB</p>
+                  <div className="py-8">
+                    <Upload className="w-12 h-12 mx-auto text-muted-foreground mb-3 group-hover:text-primary transition-colors" />
+                    <p className="text-base md:text-lg font-medium mb-1 text-gray-700">Click to upload image</p>
+                    <p className="text-xs md:text-sm text-muted-foreground">PNG, JPG up to 10MB</p>
                   </div>
                 )}
               </label>
@@ -299,7 +311,7 @@ const Index = () => {
                   </>
                 ) : (
                   <>
-                    <Sparkles className="w-5 h-5 mr-2" /> เริ่มการจำแนกสายพันธุ์
+                    <Search className="w-5 h-5 mr-2" /> เริ่มการจำแนกสายพันธุ์
                   </>
                 )}
               </Button>
@@ -354,7 +366,7 @@ const Index = () => {
                   </Card>
                   <Card className="p-4 bg-purple-50 border-purple-200 md:col-span-2 shadow-sm">
                     <div className="flex items-center gap-2 mb-2 text-purple-700 font-bold">
-                      <Sparkles size={18} /> ประโยชน์ของกล้วย
+                      <HeartPulse size={18} /> ประโยชน์ของกล้วย
                     </div>
                     <p className="text-sm text-slate-700 leading-relaxed">{bananaDetails?.benefits || "-"}</p>
                   </Card>
@@ -384,7 +396,7 @@ const Index = () => {
         <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
           <Card className="p-6 text-center hover:shadow-soft transition-shadow">
             <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Sparkles className="w-8 h-8 text-primary" />
+              <Cpu className="w-8 h-8 text-primary" />
             </div>
             <h3 className="text-xl font-bold mb-2">AI Detection</h3>
             <p className="text-muted-foreground">
@@ -421,7 +433,6 @@ const Index = () => {
 
             <div className="relative z-10">
               <div className="inline-flex items-center gap-2 bg-yellow-100 text-yellow-700 px-4 py-2 rounded-full mb-6 animate-bounce" style={{ animationDuration: '3s' }}>
-                <Sparkles size={16} />
                 <span className="text-xs font-bold uppercase tracking-wider">Join our community</span>
               </div>
 

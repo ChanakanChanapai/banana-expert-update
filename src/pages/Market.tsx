@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Search, Star, MapPin, X } from "lucide-react"; 
 import { toast } from "sonner";
-import Navbar from "@/components/Navbar";
+import Navbar from "@/components/layout/Navbar";
 import {
   Select,
   SelectContent,

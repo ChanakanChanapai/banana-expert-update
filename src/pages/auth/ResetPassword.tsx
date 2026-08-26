@@ -48,7 +48,7 @@ const ResetPassword = () => {
       toast.success("เปลี่ยนรหัสผ่านสำเร็จ! เข้าสู่ระบบด้วยรหัสใหม่ได้เลย");
       
       // 3. พาเขากลับไปหน้า Login
-      setTimeout(() => navigate("/auth"), 2000);
+      setTimeout(() => navigate("/auth/login"), 2000);
 
     } catch (err: any) {
       toast.error(err.message || "Failed to update password");

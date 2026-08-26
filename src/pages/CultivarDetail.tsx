@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import Navbar from "@/components/layout/Navbar";
 
 interface Cultivar {
   id: string;
@@ -79,9 +80,10 @@ const CultivarDetail = () => {
 
   return (
     <div className="min-h-screen bg-gradient-hero pb-16">
-      <nav className="border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          {/* ✅ ใช้ navigate(-1) เพื่อย้อนกลับไปหน้าที่จากมา (Detect หรือ Knowledge) */}
+      <Navbar />
+
+      <div className="container mx-auto px-4 py-6">
+        <div className="max-w-4xl mx-auto space-y-6">
           <Button 
             variant="ghost" 
             onClick={() => navigate(-1)} 
@@ -90,11 +92,7 @@ const CultivarDetail = () => {
             <ArrowLeft className="w-4 h-4 mr-2" /> 
             ย้อนกลับ
           </Button>
-        </div>
-      </nav>
 
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto space-y-8">
           <Card className="overflow-hidden shadow-2xl border-none bg-white">
             
             <div className="max-w-2xl mx-auto w-full aspect-square relative overflow-hidden">

@@ -11,6 +11,7 @@ import {
   Store,
 } from "lucide-react";
 import { toast } from "sonner";
+import Navbar from "@/components/layout/Navbar";
 
 /* ---------- Types ---------- */
 
@@ -164,25 +165,10 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-muted/40">
-      {/* NAVBAR */}
-      <nav className="border-b bg-background sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <Button size="icon" variant="ghost" onClick={() => navigate("/")}>
-              <ArrowLeft className="w-4 h-4" />
-            </Button>
-            <h1 className="text-xl font-bold">หน้าหลัก</h1>
-          </div>
+    <div className="min-h-screen bg-muted/40 pb-12">
+      <Navbar />
 
-          <Button variant="ghost" onClick={handleLogout}>
-            <LogOut className="w-4 h-4 mr-2" />
-            ออกจากระบบ
-          </Button>
-        </div>
-      </nav>
-
-      <div className="container mx-auto px-4 py-10 max-w-6xl space-y-8">
+      <div className="container mx-auto px-4 py-8 max-w-6xl space-y-8">
         {/* USER INFO */}
         <Card className="p-6">
           <h2 className="text-2xl font-bold">{profile?.full_name || "ผู้ใช้งาน"}</h2>

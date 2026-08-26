@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Book, Store, User, LogOut, ArrowLeft } from "lucide-react"; 
-import { useNavigate, useLocation } from "react-router-dom"; 
+import { Book, Store, User, LogOut, ArrowLeft, ScanLine } from "lucide-react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { NavLink } from "./NavLink"; 
@@ -82,19 +82,8 @@ const Navbar = () => {
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         
         <div className="flex items-center gap-2">
-          {location.pathname !== "/" && (
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={() => navigate(-1)} 
-              className="mr-1 rounded-xl text-slate-500 hover:bg-orange-600 hover:text-white transition-all duration-200"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-          )}
-
           <h1
-            className="text-2xl font-black tracking-tight bg-gradient-to-r from-yellow-500 to-orange-600 bg-clip-text text-transparent cursor-pointer"
+            className="text-2xl font-black tracking-tight bg-gradient-to-r from-yellow-500 to-orange-600 bg-clip-text text-transparent cursor-pointer select-none"
             onClick={() => navigate("/")}
           >
             Banana Expert
@@ -102,6 +91,20 @@ const Navbar = () => {
         </div>
 
         <div className="flex items-center gap-1 md:gap-2">
+          <button
+            onClick={() => {
+              if (location.pathname === "/") {
+                document.getElementById("detection")?.scrollIntoView({ behavior: "smooth" });
+              } else {
+                navigate("/?scrollTo=detection");
+              }
+            }}
+            className="hidden md:flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-slate-900 transition-all hover:bg-orange-600 hover:text-white"
+          >
+            <ScanLine className="w-4 h-4" />
+            Detection
+          </button>
+
           <NavLink 
             to="/knowledge" 
             className="hidden md:flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-slate-900 transition-all hover:bg-orange-600 hover:text-white"

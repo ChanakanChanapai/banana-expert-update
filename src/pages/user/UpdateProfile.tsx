@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { ArrowLeft, Loader2, User, Store } from "lucide-react";
+import Navbar from "@/components/layout/Navbar";
  
 /* ---------- Types ---------- */
  
@@ -248,18 +249,18 @@ const UpdateProfile = () => {
   /* ---------- UI ---------- */
  
   return (
-    <div className="min-h-screen bg-gradient-hero">
-      <nav className="border-b bg-background/80 backdrop-blur sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-          <h1 className="text-2xl font-bold">แก้ไขโปรไฟล์</h1>
-        </div>
-      </nav>
+    <div className="min-h-screen bg-gradient-hero pb-12">
+      <Navbar />
  
       <div className="container mx-auto px-4 py-8">
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-2xl mx-auto space-y-6">
+          {/* In-page Back Button */}
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="rounded-xl">
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+            <h1 className="text-2xl font-bold">แก้ไขโปรไฟล์</h1>
+          </div>
  
           <Tabs defaultValue="profile">
  

@@ -7,6 +7,11 @@ All colors MUST be HSL.
 */
 
 @layer base {
+  html {
+    scrollbar-gutter: stable;
+    overflow-y: scroll;
+  }
+
   :root {
     /* Banana Expert - Tropical Theme */
     --background: 45 20% 98%;
