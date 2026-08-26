@@ -10,7 +10,7 @@
 ![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)
 
 <p align="center">
-  <b>แพลตฟอร์มจำแนกสายพันธุ์กล้วยด้วย AI • คลังความรู้โรคและการเกษตร • ตลาดจองผลผลิตล่วงหน้าตรงจากฟาร์ม • และ Banana Assistant AI Chatbot</b>
+  <b>แพลตฟอร์มจำแนกสายพันธุ์กล้วยด้วย AI • ตลาดจองผลผลิตล่วงหน้าตรงจากฟาร์ม • และ Banana Assistant AI Chatbot</b>
 </p>
 
 </div>
