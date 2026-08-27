@@ -22,6 +22,7 @@ import {
   Check,
   X,
   Truck,
+  Printer,
 } from "lucide-react";
 import {
   AlertDialog,
@@ -34,7 +35,10 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-
+import {
+  ShippingLabelModal,
+  ShippingLabelData,
+} from "@/components/shipping/ShippingLabelModal";
 
 /* ---------- Types ---------- */
 
@@ -50,8 +54,11 @@ interface Reservation {
   id: string;
   quantity: number;
   created_at: string;
+  receiver_name?: string | null;
+  receiver_phone?: string | null;
+  delivery_address?: string | null;
   products: { name: string; farm_id: string } | null;
-  profiles: { full_name: string } | null;
+  profiles: { full_name: string; phone?: string | null; address?: string | null } | null;
 }
 
 interface Order {
@@ -59,10 +66,24 @@ interface Order {
   status: OrderStatus;
   order_number: string;
   quantity: number;
+  total_price?: number;
   tracking_number: string | null;
+  carrier?: string | null;
+  delivery_address?: string | null;
+  receiver_name?: string | null;
+  receiver_phone?: string | null;
+  delivery_notes?: string | null;
   created_at: string;
+  shipping_date?: string | null;
   products: { name: string; farm_id: string } | null;
-  profiles: { full_name: string } | null;
+  profiles: { full_name: string; phone?: string | null; address?: string | null } | null;
+}
+
+interface FarmProfileInfo {
+  id: string;
+  farm_name: string;
+  farm_location: string;
+  phone: string;
 }
 
 /* ---------- Component ---------- */
@@ -71,10 +92,12 @@ const FarmOrders = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<
-  "pending" | "confirmed" | "shipping" | "done" | "expired"
->("pending");
+    "pending" | "confirmed" | "shipping" | "done" | "expired"
+  >("pending");
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
+  const [farmInfo, setFarmInfo] = useState<FarmProfileInfo | null>(null);
+  const [selectedLabel, setSelectedLabel] = useState<ShippingLabelData | null>(null);
   const [shippingId, setShippingId] = useState<string | null>(null);
   const [tracking, setTracking] = useState("");
   const [carrier, setCarrier] = useState("");
@@ -83,25 +106,25 @@ const FarmOrders = () => {
   const [cancelReason, setCancelReason] = useState("");
   const [cancelId, setCancelId] = useState<string | null>(null);
 
-const todayShipping = useMemo(
-  () =>
-    orders.filter(
-      (o) =>
-        o.status === "confirmed" &&
-        (o as any).shipping_date === today
-    ),
-  [orders]
-);
+  const todayShipping = useMemo(
+    () =>
+      orders.filter(
+        (o) =>
+          o.status === "confirmed" &&
+          (o as any).shipping_date === today
+      ),
+    [orders, today]
+  );
 
-const otherConfirmed = useMemo(
-  () =>
-    orders.filter(
-      (o) =>
-        o.status === "confirmed" &&
-        (o as any).shipping_date !== today
-    ),
-  [orders]
-);
+  const otherConfirmed = useMemo(
+    () =>
+      orders.filter(
+        (o) =>
+          o.status === "confirmed" &&
+          (o as any).shipping_date !== today
+      ),
+    [orders, today]
+  );
 
   useEffect(() => {
     loadData();
@@ -112,27 +135,40 @@ const otherConfirmed = useMemo(
   const loadData = async () => {
     try {
       setLoading(true);
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (!session) {
         navigate("/auth/login");
         return;
       }
 
-      // 1. ดึงข้อมูลฟาร์มของ User ปัจจุบันก่อน
+      // 1. ดึงข้อมูลฟาร์มของ User ปัจจุบันพร้อมเบอร์ติดต่อ
       const { data: farmProfile } = await supabase
         .from("farm_profiles")
-        .select("id")
+        .select(`
+          id,
+          farm_name,
+          farm_location,
+          profiles:user_id ( phone )
+        `)
         .eq("user_id", session.user.id)
-        .single();
+        .maybeSingle();
 
       if (!farmProfile) {
-        // ถ้าไม่มีฟาร์ม ให้เซ็ตค่าว่างแล้วจบการทำงาน
         setReservations([]);
         setOrders([]);
         return;
       }
 
-      // 2. ดึงข้อมูลและกรองเฉพาะ farm_id ของเรา (ใช้ !inner เพื่อกรองความสัมพันธ์)
+      setFarmInfo({
+        id: farmProfile.id,
+        farm_name: farmProfile.farm_name || "ฟาร์มกล้วยคุณภาพ",
+        farm_location: farmProfile.farm_location || "",
+        phone: (farmProfile.profiles as any)?.phone || "",
+      });
+
+      // 2. ดึงข้อมูลและกรองเฉพาะ farm_id ของเรา
       const [{ data: r }, { data: o }] = await Promise.all([
         supabase
           .from("reservations")
@@ -140,12 +176,15 @@ const otherConfirmed = useMemo(
             id,
             quantity,
             created_at,
+            receiver_name,
+            receiver_phone,
+            delivery_address,
             products!inner ( name, farm_id ),
-            profiles:user_id ( full_name )
+            profiles:user_id ( full_name, phone, address )
           `)
           .eq("products.farm_id", farmProfile.id)
           .eq("status", "pending")
-          .order("created_at"),
+          .order("created_at", { ascending: false }),
 
         supabase
           .from("orders")
@@ -154,14 +193,20 @@ const otherConfirmed = useMemo(
             order_number,
             status,
             quantity,
+            total_price,
             tracking_number,
+            carrier,
+            delivery_address,
+            receiver_name,
+            receiver_phone,
+            delivery_notes,
             created_at,
             shipping_date,
             products!inner ( name, farm_id ),
-            profiles:user_id ( full_name )
+            profiles:user_id ( full_name, phone, address )
           `)
           .eq("products.farm_id", farmProfile.id)
-          .order("created_at"),
+          .order("created_at", { ascending: false }),
       ]);
 
       setReservations((r as any) || []);
@@ -271,16 +316,43 @@ loadData(); // ✅ ใช้อันนี้
 
   /* ---------- UI ---------- */
 
+  const openLabelModal = (item: any) => {
+    const labelData: ShippingLabelData = {
+      order_number: item.order_number || item.id.slice(0, 8),
+      created_at: item.created_at,
+      shipping_date: item.shipping_date || item.expiry_date,
+      product_name: item.products?.name || "กล้วยสดจากฟาร์ม",
+      quantity: item.quantity || 1,
+      total_price: item.total_price,
+      tracking_number: item.tracking_number || null,
+      carrier: item.carrier || null,
+      delivery_notes: item.delivery_notes || item.note || null,
+      receiver_name:
+        item.receiver_name || item.profiles?.full_name || "ลูกค้าผู้รับ",
+      receiver_phone: item.receiver_phone || item.profiles?.phone || "-",
+      delivery_address:
+        item.delivery_address ||
+        item.profiles?.address ||
+        "ไม่ได้ระบุที่อยู่จัดส่ง",
+      farm_name: farmInfo?.farm_name || "ฟาร์มกล้วยคุณภาพ",
+      farm_phone: farmInfo?.phone || "-",
+      farm_location: farmInfo?.farm_location || "",
+    };
+    setSelectedLabel(labelData);
+  };
+
+  /* ---------- UI ---------- */
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin" />
+        <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-muted/30">
+    <div className="min-h-screen bg-muted/30 pb-12">
       {/* ---------- Header ---------- */}
       <nav className="border-b bg-background sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center gap-4">
@@ -291,10 +363,9 @@ loadData(); // ✅ ใช้อันนี้
           >
             <ArrowLeft className="w-5 h-5" />
           </Button>
-          <h1 className="text-2xl font-bold">การจองจากลูกค้า</h1>
+          <h1 className="text-2xl font-bold">การจองและคำสั่งซื้อ</h1>
         </div>
       </nav>
-    
 
       {/* ---------- Tabs ---------- */}
       <div className="container mx-auto px-4 max-w-6xl space-y-6 py-6">
@@ -305,269 +376,316 @@ loadData(); // ✅ ใช้อันนี้
             <TabsTrigger value="shipping">กำลังจัดส่ง</TabsTrigger>
             <TabsTrigger value="done">เสร็จสิ้น</TabsTrigger>
             <TabsTrigger value="expired">หมดอายุ</TabsTrigger>
-
           </TabsList>
         </Tabs>
         <div className="mt-4">
-        <Input
-        placeholder="ค้นหาลูกค้า หรือ ชื่อสินค้า..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-      />
-      </div>
-
+          <Input
+            placeholder="ค้นหาลูกค้า หรือ ชื่อสินค้า หรือเลขออเดอร์..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
 
         {tab === "pending" && (
-  <OrderTable
-    data={filterData(reservations)}
-    actions={(r) => (
-      <>
-        <Button
-          size="icon"
-          variant="ghost"
-          onClick={() => confirmReservation(r)}
-        >
-          <Check className="w-4 h-4 text-green-600" />
-        </Button>
+          <OrderTable
+            data={filterData(reservations)}
+            onPrintLabel={openLabelModal}
+            actions={(r) => (
+              <>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  title="ยืนยันออเดอร์"
+                  onClick={() => confirmReservation(r)}
+                >
+                  <Check className="w-4 h-4 text-green-600" />
+                </Button>
 
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button
-              size="icon"
-              variant="ghost"
-              onClick={() => setCancelId(r.id)}
-            >
-              <X className="w-4 h-4 text-red-600" />
-            </Button>
-          </AlertDialogTrigger>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      title="ยกเลิกการจอง"
+                      onClick={() => setCancelId(r.id)}
+                    >
+                      <X className="w-4 h-4 text-red-600" />
+                    </Button>
+                  </AlertDialogTrigger>
 
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>
-                Cancel reservation?
-              </AlertDialogTitle>
-              <AlertDialogDescription>
-                ยกเลิกการจองนี้ใช่ไหม
-              </AlertDialogDescription>
-              <Input
-                  placeholder="เหตุผลในการยกเลิก"
-                  value={cancelReason}
-                  onChange={(e) => setCancelReason(e.target.value)}
-                />
-            </AlertDialogHeader>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>ยกเลิกการจอง?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        ยกเลิกการจองนี้ใช่ไหม
+                      </AlertDialogDescription>
+                      <Input
+                        placeholder="เหตุผลในการยกเลิก"
+                        value={cancelReason}
+                        onChange={(e) => setCancelReason(e.target.value)}
+                      />
+                    </AlertDialogHeader>
 
-            <AlertDialogFooter>
-              <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={() => {
-                  if (!cancelId) return;
-
-                  cancelReservation(cancelId, cancelReason);
-                  setCancelId(null);
-                  setCancelReason("");
-                }}
-              >
-                ยืนยัน
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      </>
-
-      
-    )}
-  />
-)}
-
-
-    {tab === "confirmed" && (
-  <div className="space-y-8">
-
-    {/* ---------- ส่งวันนี้ ---------- */}
-    <div>
-      <h2 className="font-semibold text-lg mb-2">
-        🚚 ต้องจัดส่งวันนี้
-      </h2>
-
-      <OrderTable
-        data={filterData(todayShipping)}
-        actions={(o) => (
-          <Button onClick={() => setShippingId(o.id)}>
-            <Truck className="w-4 h-4 mr-1" />
-            จัดส่งสินค้า
-          </Button>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => {
+                          if (!cancelId) return;
+                          cancelReservation(cancelId, cancelReason);
+                          setCancelId(null);
+                          setCancelReason("");
+                        }}
+                      >
+                        ยืนยัน
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </>
+            )}
+          />
         )}
-      />
-    </div>
 
-
-
-
-    {/* ---------- ออเดอร์อื่น ---------- */}
-    <div>
-      <h2 className="font-semibold text-lg mb-2">
-        📦 ออเดอร์ที่รอจัดส่ง
-      </h2>
-
-      <OrderTable
-        data={filterData(otherConfirmed)}
-        actions={(o) => (
-          <Button onClick={() => setShippingId(o.id)}>
-            <Truck className="w-4 h-4 mr-1" />
-            จัดส่งสินค้า
-          </Button>
-        )}
-      />
-    </div>
-
-  </div>
-)}
-
-      {tab === "shipping" && (
-                <OrderTable
-                  data={filterData(shipping)}
-                />
-              )}
-      
-      {tab === "done" && (
+        {tab === "confirmed" && (
           <div className="space-y-8">
-            <OrderTable data={filterData(done)} />
+            {/* ---------- ส่งวันนี้ ---------- */}
+            <div>
+              <h2 className="font-semibold text-lg mb-2 flex items-center gap-2">
+                <span>🚚 ต้องจัดส่งวันนี้</span>
+                <span className="text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold">
+                  {todayShipping.length} รายการ
+                </span>
+              </h2>
+
+              <OrderTable
+                data={filterData(todayShipping)}
+                onPrintLabel={openLabelModal}
+                actions={(o) => (
+                  <Button
+                    size="sm"
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                    onClick={() => setShippingId(o.id)}
+                  >
+                    <Truck className="w-4 h-4 mr-1" />
+                    จัดส่งสินค้า
+                  </Button>
+                )}
+              />
+            </div>
+
+            {/* ---------- ออเดอร์อื่น ---------- */}
+            <div>
+              <h2 className="font-semibold text-lg mb-2">📦 ออเดอร์ที่รอจัดส่ง</h2>
+
+              <OrderTable
+                data={filterData(otherConfirmed)}
+                onPrintLabel={openLabelModal}
+                actions={(o) => (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setShippingId(o.id)}
+                  >
+                    <Truck className="w-4 h-4 mr-1" />
+                    จัดส่งสินค้า
+                  </Button>
+                )}
+              />
+            </div>
           </div>
         )}
 
-      {tab === "expired" && (
-        <OrderTable
-          data={filterData(expired)}
-        />
+        {tab === "shipping" && (
+          <OrderTable
+            data={filterData(shipping)}
+            onPrintLabel={openLabelModal}
+          />
+        )}
+
+        {tab === "done" && (
+          <div className="space-y-8">
+            <OrderTable
+              data={filterData(done)}
+              onPrintLabel={openLabelModal}
+            />
+          </div>
+        )}
+
+        {tab === "expired" && (
+          <OrderTable
+            data={filterData(expired)}
+            onPrintLabel={openLabelModal}
+          />
+        )}
+      </div>
+
+      {/* ---------- Ship Modal ---------- */}
+      {shippingId && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <Card className="p-6 space-y-4 w-full max-w-md bg-background shadow-2xl">
+            <h3 className="font-semibold text-lg">ข้อมูลการจัดส่ง</h3>
+
+            {/* ชื่อขนส่ง */}
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-muted-foreground">บริษัทขนส่ง</label>
+              <Input
+                placeholder="ชื่อขนส่ง (เช่น Kerry, Flash, ไปรษณีย์ไทย, J&T)"
+                value={carrier}
+                onChange={(e) => setCarrier(e.target.value)}
+              />
+            </div>
+
+            {/* Tracking */}
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-muted-foreground">เลขที่ติดตามพัสดุ (Tracking Number)</label>
+              <Input
+                placeholder="กรอกเลขพัสดุ"
+                value={tracking}
+                onChange={(e) => setTracking(e.target.value)}
+              />
+            </div>
+
+            <div className="flex gap-2 pt-2">
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => setShippingId(null)}
+              >
+                ยกเลิก
+              </Button>
+              <Button
+                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+                disabled={!carrier.trim() || !tracking.trim()}
+                onClick={() => {
+                  updateOrder(shippingId, "shipped", {
+                    carrier: carrier.trim(),
+                    tracking_number: tracking.trim(),
+                    shipped_at: new Date().toISOString(),
+                  });
+
+                  setShippingId(null);
+                  setCarrier("");
+                  setTracking("");
+                }}
+              >
+                ยืนยันการจัดส่ง
+              </Button>
+            </div>
+          </Card>
+        </div>
       )}
 
-      </div>
-
-
-          {/* ---------- Ship Modal ---------- */}
-{shippingId && (
-  <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
-    <Card className="p-6 space-y-4 w-96">
-      <h3 className="font-semibold text-lg">
-        ข้อมูลการจัดส่ง
-      </h3>
-
-      {/* ชื่อขนส่ง */}
-      <Input
-        placeholder="ชื่อขนส่ง (เช่น Kerry, Flash, ไปรษณีย์ไทย)"
-        value={carrier}
-        onChange={(e) => setCarrier(e.target.value)}
+      {/* ---------- Shipping Label Modal ---------- */}
+      <ShippingLabelModal
+        open={Boolean(selectedLabel)}
+        onOpenChange={(open) => {
+          if (!open) setSelectedLabel(null);
+        }}
+        data={selectedLabel}
       />
-
-      {/* Tracking */}
-      <Input
-        placeholder="เลขที่ติดตามพัสดุ"
-        value={tracking}
-        onChange={(e) => setTracking(e.target.value)}
-      />
-
-      <div className="flex gap-2">
-        <Button variant="outline" className="w-full" onClick={() => setShippingId(null)}>
-          ยกเลิก
-        </Button>
-        <Button
-          className="w-full"
-          disabled={!carrier.trim() || !tracking.trim()}
-          onClick={() => {
-            updateOrder(shippingId, "shipped", {
-              carrier: carrier.trim(),
-              tracking_number: tracking.trim(),
-              shipped_at: new Date().toISOString(),
-            });
-
-            setShippingId(null);
-            setCarrier("");
-            setTracking("");
-          }}
-        >
-          ยืนยันการจัดส่ง
-        </Button>
-      </div>
-    </Card>
-  </div>
-)}   
-      </div>  
-        );       
-      }; 
-
-
+    </div>
+  );
+};
 
 /* ---------- Table ---------- */
 
 const OrderTable = ({
   data,
   actions,
+  onPrintLabel,
 }: {
   data: any[];
   actions?: (o: any) => React.ReactNode;
+  onPrintLabel?: (o: any) => void;
 }) => {
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
 
   if (data.length === 0) {
     return (
-      <div className="text-center py-8 text-muted-foreground">
-        No data
+      <div className="text-center py-12 text-muted-foreground bg-card rounded-xl border border-dashed">
+        ไม่มีรายการคำสั่งซื้อในหมวดนี้
       </div>
     );
   }
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>หมายเลขรายการ</TableHead>
-          <TableHead>ลูกค้า</TableHead>
-          <TableHead>สินค้า</TableHead>
-          <TableHead>จำนวน</TableHead>
-          <TableHead>วันที่จอง</TableHead>
-          <TableHead className="text-right">
-            การดำเนินการ
-          </TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {data.map((o) => (
-          <TableRow key={o.id}>
-            <TableCell className="font-medium">{o.order_number ?? o.id.slice(0, 8)}</TableCell>
-            <TableCell>{o.profiles?.full_name}</TableCell>
-            <TableCell>{o.products?.name}</TableCell>
-            <TableCell>{o.quantity}</TableCell>
-            <TableCell>
-              {new Date(o.created_at).toLocaleDateString("th-TH", {
-                year: "numeric",
-                month: "short",
-                day: "numeric",
-              })}
-            </TableCell>
-
-            <TableCell className="text-right space-x-2">
-              {o.status === "expired" && (
-                <span className="px-2 py-1 text-xs rounded bg-muted text-muted-foreground">
-                  ⏱ หมดอายุ
-                </span>
-              )}
-
-              <Button
-                size="icon"
-                variant="ghost"
-                onClick={() => navigate(`/farm/orders/${o.id}`)}
-              >
-                <Eye className="w-4 h-4" />
-              </Button>
-
-              {actions && actions(o)}
-            </TableCell>
-
+    <div className="rounded-xl border bg-card overflow-hidden shadow-sm">
+      <Table>
+        <TableHeader>
+          <TableRow className="bg-muted/40">
+            <TableHead>หมายเลขรายการ</TableHead>
+            <TableHead>ลูกค้า</TableHead>
+            <TableHead>สินค้า</TableHead>
+            <TableHead>จำนวน</TableHead>
+            <TableHead>วันที่จอง</TableHead>
+            <TableHead className="text-right">การดำเนินการ</TableHead>
           </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+        </TableHeader>
+        <TableBody>
+          {data.map((o) => (
+            <TableRow key={o.id} className="hover:bg-muted/30 transition-colors">
+              <TableCell className="font-mono font-medium">
+                {o.order_number ?? o.id.slice(0, 8)}
+              </TableCell>
+              <TableCell>
+                <div className="font-medium">
+                  {o.receiver_name || o.profiles?.full_name || "ลูกค้า"}
+                </div>
+                {(o.receiver_phone || o.profiles?.phone) && (
+                  <div className="text-xs text-muted-foreground">
+                    {o.receiver_phone || o.profiles?.phone}
+                  </div>
+                )}
+              </TableCell>
+              <TableCell>{o.products?.name || "-"}</TableCell>
+              <TableCell className="font-semibold">{o.quantity}</TableCell>
+              <TableCell className="text-sm text-muted-foreground">
+                {new Date(o.created_at).toLocaleDateString("th-TH", {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                })}
+              </TableCell>
 
+              <TableCell className="text-right space-x-1 whitespace-nowrap">
+                {o.status === "expired" && (
+                  <span className="px-2 py-1 text-xs rounded bg-muted text-muted-foreground mr-2">
+                    ⏱ หมดอายุ
+                  </span>
+                )}
+
+                {/* ปุ่มพิมพ์ใบปะหน้าพัสดุ */}
+                {onPrintLabel && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    title="ดู / พิมพ์ใบปะหน้าพัสดุ"
+                    className="border-emerald-600 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 h-8 gap-1 px-2.5"
+                    onClick={() => onPrintLabel(o)}
+                  >
+                    <Printer className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline text-xs">ใบปะหน้า</span>
+                  </Button>
+                )}
+
+                {/* ปุ่มดูรายละเอียด */}
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  title="ดูรายละเอียด"
+                  className="h-8 w-8"
+                  onClick={() => navigate(`/farm/orders/${o.id}`)}
+                >
+                  <Eye className="w-4 h-4" />
+                </Button>
+
+                {actions && actions(o)}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
   );
 };
 
