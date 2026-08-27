@@ -650,10 +650,13 @@ const UserOrders = () => {
               </div>
             )}
             <Badge
-              variant="secondary"
-              className="absolute bottom-1 right-1 text-[9px] px-1.5 py-0 h-4 bg-background/90 backdrop-blur-sm"
+              className={`absolute bottom-1.5 right-1.5 text-[10px] font-bold px-2 py-0.5 shadow-md rounded-md border ${
+                isFruit
+                  ? "bg-slate-950/85 text-amber-300 border-slate-800 backdrop-blur-sm"
+                  : "bg-slate-950/85 text-emerald-300 border-slate-800 backdrop-blur-sm"
+              }`}
             >
-              {isFruit ? "ผลสด" : "หน่อพันธุ์"}
+              {isFruit ? "🍌 ผลสด" : "🌱 หน่อพันธุ์"}
             </Badge>
           </div>
 

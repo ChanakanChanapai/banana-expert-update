@@ -724,8 +724,11 @@ const FarmDashboard = () => {
                         {/* Product type badge */}
                         <div className="absolute top-2 left-2">
                           <Badge
-                            variant="secondary"
-                            className="text-[10px] px-2 py-0.5 bg-background/90 backdrop-blur-sm shadow-sm"
+                            className={`text-[10px] px-2 py-0.5 shadow-md border ${
+                              isFruit
+                                ? "bg-slate-950/85 text-amber-300 border-slate-800 backdrop-blur-sm"
+                                : "bg-slate-950/85 text-emerald-300 border-slate-800 backdrop-blur-sm"
+                            }`}
                           >
                             {isFruit ? "🍌 กล้วยผลสด" : "🌱 หน่อพันธุ์"}
                           </Badge>
