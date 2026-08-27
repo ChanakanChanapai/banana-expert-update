@@ -6,10 +6,20 @@ import {
   User, 
   LogOut, 
   ScanLine, 
-  Layers,
-  Menu,
-  X
+  Menu, 
+  X,
+  AlertTriangle 
 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -21,6 +31,7 @@ const Navbar = () => {
   const [session, setSession] = useState<any>(null);
   const [isFarmRole, setIsFarmRole] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   // ✨ ฟังก์ชันอัปเดตสถานะออนไลน์ (last_seen)
   const updateLastSeen = async (userId: string) => {
@@ -163,17 +174,6 @@ const Navbar = () => {
             Smart Marketplace
           </NavLink>
 
-          {/* 4. Farm Management */}
-          <NavLink 
-            to={session ? (isFarmRole ? "/farm/dashboard" : "/dashboard") : "/auth/login"} 
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-bold text-slate-900 transition-all hover:bg-amber-100 active:scale-95"
-            activeClassName="bg-amber-400 text-slate-950 shadow-sm"
-            title="ระบบจัดการฟาร์ม คลังสินค้า คำสั่งซื้อ และร้านค้าเกษตรกร"
-          >
-            <Layers className="w-4 h-4 text-purple-600" />
-            Farm Management
-          </NavLink>
-
           {session ? (
             <div className="flex items-center gap-2 border-l border-amber-200/80 pl-3 ml-2">
               <Button 
@@ -188,7 +188,8 @@ const Navbar = () => {
               <Button 
                 variant="ghost" 
                 size="icon" 
-                onClick={handleSignOut} 
+                onClick={() => setShowLogoutConfirm(true)} 
+                title="ออกจากระบบ"
                 className="rounded-xl text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition-all duration-200"
               >
                 <LogOut className="w-4 h-4" />
@@ -285,25 +286,15 @@ const Navbar = () => {
             <span>Smart Marketplace (ตลาดซื้อขาย)</span>
           </NavLink>
 
-          {/* 4. Farm Management */}
-          <NavLink 
-            to={session ? (isFarmRole ? "/farm/dashboard" : "/dashboard") : "/auth/login"} 
-            onClick={() => setMobileMenuOpen(false)}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-slate-800 hover:bg-amber-50 active:bg-amber-100 transition-colors"
-            activeClassName="bg-amber-100 text-slate-950 font-black"
-          >
-            <div className="w-8 h-8 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center">
-              <Layers className="w-4 h-4" />
-            </div>
-            <span>Farm Management (ระบบฟาร์ม)</span>
-          </NavLink>
-
           {session && (
             <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
               <Button 
                 variant="ghost" 
                 size="sm"
-                onClick={handleSignOut} 
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  setShowLogoutConfirm(true);
+                }} 
                 className="w-full text-slate-600 hover:text-destructive hover:bg-destructive/10 rounded-xl justify-center font-bold text-xs"
               >
                 <LogOut className="w-4 h-4 mr-2" />
@@ -313,6 +304,34 @@ const Navbar = () => {
           )}
         </div>
       )}
+
+      {/* 🛑 Confirmation Dialog for Sign Out */}
+      <AlertDialog open={showLogoutConfirm} onOpenChange={setShowLogoutConfirm}>
+        <AlertDialogContent className="rounded-2xl max-w-md p-6 bg-card border shadow-2xl">
+          <AlertDialogHeader>
+            <div className="w-12 h-12 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center mb-2 mx-auto sm:mx-0">
+              <LogOut className="w-6 h-6" />
+            </div>
+            <AlertDialogTitle className="text-lg font-bold text-foreground">
+              ยืนยันการออกจากระบบ
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-sm text-muted-foreground">
+              คุณต้องการออกจากระบบ Banana Expert ใช่หรือไม่?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="mt-4 gap-2 sm:gap-0">
+            <AlertDialogCancel className="rounded-xl font-medium">
+              ยกเลิก
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleSignOut}
+              className="bg-destructive hover:bg-destructive/90 text-white rounded-xl font-bold"
+            >
+              ออกจากระบบ
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </nav>
   );
 };
