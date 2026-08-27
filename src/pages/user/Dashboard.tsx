@@ -425,6 +425,17 @@ const Dashboard = () => {
 
             {/* Header Actions */}
             <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
+              {role === "farm" && (
+                <Button
+                  size="sm"
+                  onClick={() => navigate("/farm/dashboard")}
+                  className="bg-amber-400 hover:bg-amber-500 text-slate-950 font-black rounded-xl shadow-sm border border-amber-500/30 gap-1.5 flex-1 md:flex-initial"
+                >
+                  <Store className="w-4 h-4 text-slate-950" />
+                  แดชบอร์ดฟาร์ม
+                </Button>
+              )}
+
               <Button
                 variant="outline"
                 size="sm"
@@ -511,6 +522,48 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
+
+        {/* =========================================================================
+            🌾 PROMINENT FARM MANAGEMENT HERO BANNER (FOR FARM OWNERS)
+        ========================================================================= */}
+        {role === "farm" && (
+          <div
+            onClick={() => navigate("/farm/dashboard")}
+            className="cursor-pointer group relative overflow-hidden rounded-3xl border-2 border-amber-400 bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-300 p-6 sm:p-7 shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5"
+          >
+            {/* Decorative background glow */}
+            <div className="absolute top-0 right-0 -mt-8 -mr-8 w-56 h-56 bg-white/25 rounded-full blur-2xl pointer-events-none" />
+            <div className="absolute bottom-0 right-1/4 -mb-8 w-44 h-44 bg-amber-600/10 rounded-full blur-xl pointer-events-none" />
+
+            <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
+              <div className="flex items-center gap-4 sm:gap-5">
+                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-slate-950 text-amber-400 flex items-center justify-center font-bold text-2xl shadow-md shrink-0 group-hover:scale-105 transition-transform">
+                  <Store className="w-7 h-7 sm:w-8 sm:h-8" />
+                </div>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <Badge className="bg-slate-950 text-amber-300 text-xs px-2.5 py-0.5 font-bold shadow-xs">
+                      🌾 ศูนย์จัดการฟาร์มเกษตรกร
+                    </Badge>
+                  </div>
+                  <h3 className="text-xl sm:text-2xl font-black text-slate-950 tracking-tight">
+                    เข้าสู่ระบบแดชบอร์ดฟาร์ม (Farm Dashboard)
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-900/80 font-semibold">
+                    จัดการคลังผลผลิต คำสั่งซื้อลูกค้า ตรวจสอบการจอง และพิมพ์ใบปะหน้าพัสดุ
+                  </p>
+                </div>
+              </div>
+
+              <Button
+                className="bg-slate-950 hover:bg-slate-900 text-white font-black rounded-xl px-5 h-11 shadow-md gap-2 shrink-0 group-hover:bg-slate-900 self-stretch sm:self-auto"
+              >
+                <span>เปิดแดชบอร์ดฟาร์ม</span>
+                <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </Button>
+            </div>
+          </div>
+        )}
 
         {/* =========================================================================
             2. ORDER STATUS METRICS BAR (E-Commerce Style Hub)
@@ -685,27 +738,27 @@ const Dashboard = () => {
             {role === "farm" ? (
               <div
                 onClick={() => navigate("/farm/dashboard")}
-                className="group relative overflow-hidden rounded-2xl border border-primary/40 bg-primary/5 p-5 cursor-pointer hover:border-primary hover:shadow-md transition-all flex items-center justify-between"
+                className="group relative overflow-hidden rounded-2xl border-2 border-amber-400 bg-amber-500/10 p-5 cursor-pointer hover:border-amber-500 hover:shadow-md hover:bg-amber-500/15 transition-all flex items-center justify-between"
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center font-bold group-hover:scale-110 transition-transform shadow-md">
+                  <div className="w-12 h-12 rounded-2xl bg-amber-400 text-slate-950 flex items-center justify-center font-bold group-hover:scale-110 transition-transform shadow-md">
                     <Store className="w-6 h-6" />
                   </div>
                   <div>
                     <div className="flex items-center gap-1.5">
-                      <h4 className="font-bold text-sm sm:text-base text-foreground group-hover:text-primary transition-colors">
+                      <h4 className="font-black text-sm sm:text-base text-slate-950 dark:text-amber-300">
                         แดชบอร์ดฟาร์มของฉัน
                       </h4>
-                      <Badge className="text-[10px] h-4 px-1.5 bg-primary text-primary-foreground">
+                      <Badge className="text-[10px] h-4 px-1.5 bg-slate-950 text-amber-300 font-bold">
                         ฟาร์ม
                       </Badge>
                     </div>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-muted-foreground font-medium">
                       จัดการผลผลิตและคำสั่งซื้อลูกค้า
                     </p>
                   </div>
                 </div>
-                <ChevronRight className="w-5 h-5 text-primary group-hover:translate-x-1 transition-all" />
+                <ChevronRight className="w-5 h-5 text-amber-600 group-hover:translate-x-1 transition-all" />
               </div>
             ) : (
               <div
