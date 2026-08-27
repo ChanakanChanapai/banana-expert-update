@@ -477,70 +477,88 @@ const FarmDashboard = () => {
         </div>
 
         {/* =========================================================================
-            3. MANAGEMENT SHORTCUT TILES
+            3. MANAGEMENT SHORTCUT LIST BAR (SINGLE CONTAINER)
         ========================================================================= */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="rounded-2xl border border-border/80 bg-card/90 backdrop-blur-sm shadow-sm overflow-hidden divide-y divide-border/60">
           {/* Manage Orders */}
           <div
             onClick={() => navigate("/farm/orders")}
-            className="group cursor-pointer rounded-2xl border border-border/80 bg-card/90 p-5 hover:border-primary/50 hover:shadow-md transition-all flex items-center justify-between"
+            className="group cursor-pointer p-4 sm:p-5 hover:bg-muted/40 transition-colors flex items-center justify-between"
           >
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <ShoppingCart className="w-6 h-6" />
+              <div className="w-11 h-11 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center group-hover:scale-105 transition-transform shrink-0">
+                <ShoppingCart className="w-5 h-5" />
               </div>
               <div>
                 <h3 className="font-bold text-sm sm:text-base text-foreground group-hover:text-primary transition-colors">
                   จัดการคำสั่งซื้อและจัดส่ง
                 </h3>
                 <p className="text-xs text-muted-foreground">
-                  ตรวจสอบการจองและกรอกเลขพัสดุ
+                  ตรวจสอบการจอง จัดการสถานะออเดอร์ และกรอกเลขพัสดุ
                 </p>
               </div>
             </div>
-            <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+            <div className="flex items-center gap-2">
+              {stats.pendingReservations > 0 && (
+                <Badge className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20 text-xs px-2 py-0.5">
+                  รอตรวจสอบ {stats.pendingReservations}
+                </Badge>
+              )}
+              <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+            </div>
           </div>
 
           {/* Manage Products */}
           <div
             onClick={() => navigate("/farm/products")}
-            className="group cursor-pointer rounded-2xl border border-border/80 bg-card/90 p-5 hover:border-primary/50 hover:shadow-md transition-all flex items-center justify-between"
+            className="group cursor-pointer p-4 sm:p-5 hover:bg-muted/40 transition-colors flex items-center justify-between"
           >
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <Package className="w-6 h-6" />
+              <div className="w-11 h-11 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center group-hover:scale-105 transition-transform shrink-0">
+                <Package className="w-5 h-5" />
               </div>
               <div>
                 <h3 className="font-bold text-sm sm:text-base text-foreground group-hover:text-primary transition-colors">
                   คลังสินค้าและสต็อก
                 </h3>
                 <p className="text-xs text-muted-foreground">
-                  แก้ไขราคา จำนวน และสถานะสินค้า
+                  แก้ไขราคา จำนวน และสถานะเปิด/ปิดขายสินค้า
                 </p>
               </div>
             </div>
-            <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary" className="text-xs px-2 py-0.5">
+                {stats.activeProducts} สินค้าพร้อมขาย
+              </Badge>
+              <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+            </div>
           </div>
 
           {/* Reviews & Farm Settings */}
           <div
             onClick={() => navigate(`/farm/reviews/${farm?.id}`)}
-            className="group cursor-pointer rounded-2xl border border-border/80 bg-card/90 p-5 hover:border-primary/50 hover:shadow-md transition-all flex items-center justify-between"
+            className="group cursor-pointer p-4 sm:p-5 hover:bg-muted/40 transition-colors flex items-center justify-between"
           >
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-purple-500/10 text-purple-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <Star className="w-6 h-6" />
+              <div className="w-11 h-11 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center group-hover:scale-105 transition-transform shrink-0">
+                <Star className="w-5 h-5" />
               </div>
               <div>
                 <h3 className="font-bold text-sm sm:text-base text-foreground group-hover:text-primary transition-colors">
                   รีวิวและความคิดเห็น
                 </h3>
                 <p className="text-xs text-muted-foreground">
-                  ดูคะแนนความพึงพอใจจากผู้ซื้อ
+                  ดูคะแนนความพึงพอใจและคำติชมจากผู้ซื้อ
                 </p>
               </div>
             </div>
-            <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 text-xs text-amber-500 font-bold">
+                <Star className="w-3.5 h-3.5 fill-amber-500" />
+                <span>{farm?.rating ? farm.rating.toFixed(1) : "5.0"}</span>
+              </div>
+              <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+            </div>
           </div>
         </div>
 

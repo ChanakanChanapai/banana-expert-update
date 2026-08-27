@@ -87,9 +87,11 @@ const Knowledge = () => {
       {/* Main Content */}
       <div className="container mx-auto px-4 py-12">
         <header className="text-center mb-12 animate-in fade-in slide-in-from-top-4 duration-700">
-          <h1 className="text-5xl font-bold mb-4 text-gray-800">คลังความรู้เรื่องกล้วยๆ</h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            รวบรวมข้อมูลกล้วยกว่า 10 สายพันธุ์ ยอดนิยมและหายากในประเทศไทย
+          <h1 className="text-4xl md:text-5xl font-extrabold mb-4 text-gray-800 tracking-tight">
+            คลังความรู้และสารานุกรมกล้วยไทย
+          </h1>
+          <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+            คลังความรู้และสารานุกรมกล้วยไทย ทุกเรื่องโรคพืช สายพันธุ์ และวิธีดูแลรักษา
           </p>
         </header>
 

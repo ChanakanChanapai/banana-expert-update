@@ -633,10 +633,10 @@ const Dashboard = () => {
                 </div>
                 <div>
                   <h4 className="font-bold text-sm sm:text-base text-foreground group-hover:text-primary transition-colors">
-                    คลังความรู้สายพันธุ์ & โรค
+                    Knowledge Hub (คลังความรู้)
                   </h4>
                   <p className="text-xs text-muted-foreground">
-                    คู่มือการปลูกและการดูแลรักษา
+                    คลังความรู้และสารานุกรมกล้วยไทย ทุกเรื่องโรคพืช สายพันธุ์ และวิธีดูแลรักษา
                   </p>
                 </div>
               </div>
