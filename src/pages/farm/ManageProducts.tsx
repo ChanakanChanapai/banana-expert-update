@@ -19,8 +19,6 @@ import {
   Loader2,
   Edit,
   Trash2,
-  ToggleLeft,
-  ToggleRight,
 } from "lucide-react";
 
 const PRODUCT_TYPE_DISPLAY = {
@@ -96,27 +94,6 @@ const ManageProducts = () => {
     if (error) throw error;
     setProducts(data || []);
   };
-
-  const toggleActive = async (product: Product) => {
-  try {
-    const { data, error } = await supabase.rpc(
-      "toggle_product_active",
-      { p_product_id: product.id }
-    );
-
-    if (error) throw error;
-
-    setProducts((prev) =>
-      prev.map((p) =>
-        p.id === product.id ? { ...p, is_active: data } : p
-      )
-    );
-
-    toast.success("อัปเดตสถานะสินค้าเรียบร้อย");
-  } catch (e: any) {
-    toast.error(e.message || "อัปเดตสถานะไม่สำเร็จ");
-  }
-};
 
   const handleDelete = async (productId: string) => {
   if (!confirm("ยืนยันการลบสินค้าหรือไม่?")) return;
@@ -222,23 +199,28 @@ const ManageProducts = () => {
                     </TableCell>
                     <TableCell>
                       <div className="flex justify-center">
-                        <Badge 
-                          variant={p.is_active ? "default" : "outline"}
-                          className="whitespace-nowrap px-3"
-                        >
-                          {p.is_active ? "เปิดจอง" : "ปิดจอง"}
-                        </Badge>
+                        {p.is_active ? (
+                          <Badge 
+                            className="bg-emerald-600 hover:bg-emerald-600 text-white font-semibold whitespace-nowrap px-3 py-1 shadow-sm"
+                          >
+                            Active
+                          </Badge>
+                        ) : (
+                          <Badge 
+                            variant="secondary"
+                            className="bg-slate-200 text-slate-600 dark:bg-slate-800 dark:text-slate-400 font-semibold whitespace-nowrap px-3 py-1"
+                          >
+                            Inactive
+                          </Badge>
+                        )}
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">
-                        <Button size="icon" variant="ghost" onClick={() => navigate(`/farm/products/edit/${p.id}`)}>
+                        <Button size="icon" variant="ghost" onClick={() => navigate(`/farm/products/edit/${p.id}`)} title="แก้ไขข้อมูลสินค้า">
                           <Edit className="w-4 h-4" />
                         </Button>
-                        <Button size="icon" variant="ghost" onClick={() => toggleActive(p)}>
-                          {p.is_active ? <ToggleRight className="text-primary" /> : <ToggleLeft className="text-muted-foreground" />}
-                        </Button>
-                        <Button size="icon" variant="ghost" onClick={() => handleDelete(p.id)}>
+                        <Button size="icon" variant="ghost" onClick={() => handleDelete(p.id)} title="ลบสินค้า">
                           <Trash2 className="text-destructive w-4 h-4" />
                         </Button>
                       </div>

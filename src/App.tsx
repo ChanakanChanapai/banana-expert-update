@@ -27,7 +27,6 @@ import FarmOrders from "./pages/farm/FarmOrders";
 import OrderDetail from "./pages/farm/OrderDetail";
 import FarmPublic from "@/pages/farm/FarmPublic";
 
-import BananaChatbot from "@/components/chat/BananaChatbot";
 import ScrollToTop from "@/components/layout/ScrollToTop";
 
 const queryClient = new QueryClient();
@@ -74,9 +73,6 @@ const App = () => (
           {/* Catch-all Route */}
           <Route path="*" element={<NotFound />} />
         </Routes>
-
-        {/*Banana AI Chatbot Floating Widget */}
-        <BananaChatbot />
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

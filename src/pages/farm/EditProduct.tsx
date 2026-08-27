@@ -39,6 +39,7 @@ const EditProduct = () => {
     harvest_date: "",
     expiry_date: "",
     image_url: "",
+    is_active: true,
   });
 
   /* ================= 1. LOAD DATA ================= */
@@ -72,6 +73,7 @@ const EditProduct = () => {
         harvest_date: data.harvest_date || "",
         expiry_date: data.expiry_date || "",
         image_url: data.image_url || "",
+        is_active: data.is_active ?? true,
       });
 
       if (data.image_url) {
@@ -124,6 +126,12 @@ const EditProduct = () => {
 
       if (error) throw error;
 
+      // อัปเดตสถานะ is_active
+      await supabase
+        .from("products")
+        .update({ is_active: form.is_active })
+        .eq("id", id);
+
       toast.success("แก้ไขข้อมูลสินค้าเรียบร้อย");
       navigate("/farm/products", { replace: true });
 
@@ -144,7 +152,7 @@ const EditProduct = () => {
     );
   }
 
-  /* ================= 3. RENDER UI (เหมือนเดิมเป๊ะ) ================= */
+  /* ================= 3. RENDER UI ================= */
   return (
     <div className="container mx-auto max-w-xl py-10 px-4">
       <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="mb-4">
@@ -155,6 +163,32 @@ const EditProduct = () => {
         <h1 className="text-xl font-bold">แก้ไขสินค้า</h1>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <Label>สถานะสินค้า</Label>
+            <Select
+              value={form.is_active ? "active" : "inactive"}
+              onValueChange={(v) => setForm({ ...form, is_active: v === "active" })}
+            >
+              <SelectTrigger className="mt-1">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="active">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                    <span className="font-semibold text-emerald-700">Active (เปิดขาย/รับจอง)</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="inactive">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
+                    <span className="font-semibold text-slate-600">Inactive (ปิดขายชั่วคราว)</span>
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
           <div>
             <Label>ชื่อสินค้า</Label>
             <Input

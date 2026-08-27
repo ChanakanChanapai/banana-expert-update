@@ -1,6 +1,15 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Book, Store, User, LogOut, ArrowLeft, ScanLine } from "lucide-react";
+import { 
+  BookOpen, 
+  Store, 
+  User, 
+  LogOut, 
+  ScanLine, 
+  Layers,
+  Menu,
+  X
+} from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -10,6 +19,8 @@ const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation(); 
   const [session, setSession] = useState<any>(null);
+  const [isFarmRole, setIsFarmRole] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // ✨ ฟังก์ชันอัปเดตสถานะออนไลน์ (last_seen)
   const updateLastSeen = async (userId: string) => {
@@ -23,12 +34,25 @@ const Navbar = () => {
     }
   };
 
+  const checkFarmRole = async (userId: string) => {
+    try {
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userId);
+      setIsFarmRole(roles?.some((r) => r.role === "farm") ?? false);
+    } catch (e) {
+      console.error("Error checking farm role:", e);
+    }
+  };
+
   useEffect(() => {
     // 1. ดึง Session ครั้งแรก และอัปเดตสถานะทันทีถ้า Login อยู่
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       if (session?.user) {
         updateLastSeen(session.user.id);
+        checkFarmRole(session.user.id);
       }
     });
 
@@ -37,11 +61,19 @@ const Navbar = () => {
       setSession(session);
       if (session?.user) {
         updateLastSeen(session.user.id);
+        checkFarmRole(session.user.id);
+      } else {
+        setIsFarmRole(false);
       }
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  // ปิด mobile menu เมื่อเปลี่ยน path
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
 
   // ✨ ตั้งเวลาอัปเดตทุก 4 นาที เพื่อรักษาสถานะ "ออนไลน์ตอนนี้" ในหน้า Market
   useEffect(() => {
@@ -78,19 +110,22 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="border-b border-slate-100 bg-white/95 backdrop-blur-md sticky top-0 z-50 shadow-sm">
-      <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+    <nav className="border-b border-amber-100/80 bg-white/95 backdrop-blur-md sticky top-0 z-50 shadow-sm">
+      <div className="container mx-auto px-4 py-2.5 sm:py-3 flex items-center justify-between">
         
+        {/* Brand Logo */}
         <div className="flex items-center gap-2">
           <h1
-            className="text-2xl font-black tracking-tight bg-gradient-to-r from-yellow-500 to-orange-600 bg-clip-text text-transparent cursor-pointer select-none"
+            className="text-xl sm:text-2xl font-black tracking-tight bg-gradient-to-r from-yellow-500 via-amber-500 to-yellow-600 bg-clip-text text-transparent cursor-pointer select-none"
             onClick={() => navigate("/")}
           >
             Banana Expert
           </h1>
         </div>
 
-        <div className="flex items-center gap-1 md:gap-2">
+        {/* 🧭 Desktop & Tablet Navigation Menu */}
+        <div className="hidden lg:flex items-center gap-2">
+          {/* 1. AI Detection */}
           <button
             onClick={() => {
               if (location.pathname === "/") {
@@ -99,38 +134,54 @@ const Navbar = () => {
                 navigate("/?scrollTo=detection");
               }
             }}
-            className="hidden md:flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-slate-900 transition-all hover:bg-orange-600 hover:text-white"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-bold text-slate-900 transition-all hover:bg-amber-100 active:scale-95"
+            title="ระบบจำแนกสายพันธุ์กล้วยด้วย AI"
           >
-            <ScanLine className="w-4 h-4" />
-            Detection
+            <ScanLine className="w-4 h-4 text-amber-500" />
+            AI Detection
           </button>
 
+          {/* 2. Knowledge Hub */}
           <NavLink 
             to="/knowledge" 
-            className="hidden md:flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-slate-900 transition-all hover:bg-orange-600 hover:text-white"
-            activeClassName="bg-orange-600 text-white shadow-md" 
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-bold text-slate-900 transition-all hover:bg-amber-100 active:scale-95"
+            activeClassName="bg-amber-400 text-slate-950 shadow-sm" 
+            title="คลังความรู้และสารานุกรมกล้วยไทย ทุกเรื่องโรคพืช สายพันธุ์ และวิธีดูแลรักษา"
           >
-            <Book className="w-4 h-4" />
-            Knowledge
+            <BookOpen className="w-4 h-4 text-emerald-600" />
+            Knowledge Hub
           </NavLink>
 
+          {/* 3. Smart Marketplace */}
           <NavLink 
             to="/market" 
-            className="hidden md:flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-slate-900 transition-all hover:bg-orange-600 hover:text-white"
-            activeClassName="bg-orange-600 text-white shadow-md"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-bold text-slate-900 transition-all hover:bg-amber-100 active:scale-95"
+            activeClassName="bg-amber-400 text-slate-950 shadow-sm"
+            title="ตลาดซื้อขายและสั่งจองผลผลิตกล้วยสด หน่อพันธุ์จากฟาร์มโดยตรง"
           >
-            <Store className="w-4 h-4" />
-            Marketplace
+            <Store className="w-4 h-4 text-blue-600" />
+            Smart Marketplace
+          </NavLink>
+
+          {/* 4. Farm Management */}
+          <NavLink 
+            to={session ? (isFarmRole ? "/farm/dashboard" : "/dashboard") : "/auth/login"} 
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-bold text-slate-900 transition-all hover:bg-amber-100 active:scale-95"
+            activeClassName="bg-amber-400 text-slate-950 shadow-sm"
+            title="ระบบจัดการฟาร์ม คลังสินค้า คำสั่งซื้อ และร้านค้าเกษตรกร"
+          >
+            <Layers className="w-4 h-4 text-purple-600" />
+            Farm Management
           </NavLink>
 
           {session ? (
-            <div className="flex items-center gap-2 border-l border-slate-200 pl-4 ml-2">
+            <div className="flex items-center gap-2 border-l border-amber-200/80 pl-3 ml-2">
               <Button 
                 variant="outline" 
                 onClick={() => navigate("/dashboard")} 
-                className="group gap-2 rounded-xl border-slate-300 bg-white text-slate-900 hover:bg-orange-600 hover:text-white font-bold shadow-sm transition-all"
+                className="group gap-2 rounded-xl border-slate-300 bg-white text-slate-900 hover:bg-amber-100 font-bold shadow-sm transition-all text-xs sm:text-sm"
               >
-                <User className="w-4 h-4 text-orange-500 group-hover:text-white transition-colors" /> 
+                <User className="w-4 h-4 text-amber-500 transition-colors" /> 
                 Profile
               </Button>
               
@@ -138,7 +189,7 @@ const Navbar = () => {
                 variant="ghost" 
                 size="icon" 
                 onClick={handleSignOut} 
-                className="rounded-xl text-slate-500 hover:bg-orange-600 hover:text-white transition-all duration-200"
+                className="rounded-xl text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition-all duration-200"
               >
                 <LogOut className="w-4 h-4" />
               </Button>
@@ -146,13 +197,122 @@ const Navbar = () => {
           ) : (
             <Button 
               onClick={() => navigate("/auth/login")}
-              className="bg-orange-600 hover:bg-orange-700 text-white font-black rounded-xl px-6 shadow-md transition-all active:scale-95"
+              className="bg-amber-400 hover:bg-amber-500 text-slate-950 font-black rounded-xl px-5 shadow-sm transition-all active:scale-95 ml-2 text-xs sm:text-sm border border-amber-500/30"
             >
               Sign In
             </Button>
           )}
         </div>
+
+        {/* 📱 Mobile & Tablet Hamburger Toggle */}
+        <div className="flex lg:hidden items-center gap-2">
+          {session ? (
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => navigate("/dashboard")} 
+              className="rounded-xl border-slate-300 text-xs font-bold gap-1 px-2.5 h-8"
+            >
+              <User className="w-3.5 h-3.5 text-amber-500" />
+              Profile
+            </Button>
+          ) : (
+            <Button 
+              size="sm"
+              onClick={() => navigate("/auth/login")}
+              className="bg-amber-400 hover:bg-amber-500 text-slate-950 font-bold rounded-xl text-xs px-3 h-8 shadow-sm border border-amber-500/30"
+            >
+              Sign In
+            </Button>
+          )}
+
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setMobileMenuOpen((prev) => !prev)}
+            className="rounded-xl text-slate-700 hover:bg-amber-50 h-9 w-9 p-0"
+            aria-label="Toggle navigation menu"
+          >
+            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </Button>
+        </div>
       </div>
+
+      {/* 📱 Mobile & Tablet Dropdown Drawer */}
+      {mobileMenuOpen && (
+        <div className="lg:hidden border-t border-amber-100 bg-white/98 backdrop-blur-xl px-4 py-4 space-y-2 animate-in slide-in-from-top-2 duration-200 shadow-xl">
+          {/* 1. AI Detection */}
+          <button
+            onClick={() => {
+              setMobileMenuOpen(false);
+              if (location.pathname === "/") {
+                document.getElementById("detection")?.scrollIntoView({ behavior: "smooth" });
+              } else {
+                navigate("/?scrollTo=detection");
+              }
+            }}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-slate-800 hover:bg-amber-50 active:bg-amber-100 transition-colors"
+          >
+            <div className="w-8 h-8 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center">
+              <ScanLine className="w-4 h-4" />
+            </div>
+            <span>AI Detection (สแกนสายพันธุ์)</span>
+          </button>
+
+          {/* 2. Knowledge Hub */}
+          <NavLink 
+            to="/knowledge" 
+            onClick={() => setMobileMenuOpen(false)}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-slate-800 hover:bg-amber-50 active:bg-amber-100 transition-colors"
+            activeClassName="bg-amber-100 text-slate-950 font-black"
+          >
+            <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center">
+              <BookOpen className="w-4 h-4" />
+            </div>
+            <span>Knowledge Hub (คลังความรู้)</span>
+          </NavLink>
+
+          {/* 3. Smart Marketplace */}
+          <NavLink 
+            to="/market" 
+            onClick={() => setMobileMenuOpen(false)}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-slate-800 hover:bg-amber-50 active:bg-amber-100 transition-colors"
+            activeClassName="bg-amber-100 text-slate-950 font-black"
+          >
+            <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center">
+              <Store className="w-4 h-4" />
+            </div>
+            <span>Smart Marketplace (ตลาดซื้อขาย)</span>
+          </NavLink>
+
+          {/* 4. Farm Management */}
+          <NavLink 
+            to={session ? (isFarmRole ? "/farm/dashboard" : "/dashboard") : "/auth/login"} 
+            onClick={() => setMobileMenuOpen(false)}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-slate-800 hover:bg-amber-50 active:bg-amber-100 transition-colors"
+            activeClassName="bg-amber-100 text-slate-950 font-black"
+          >
+            <div className="w-8 h-8 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center">
+              <Layers className="w-4 h-4" />
+            </div>
+            <span>Farm Management (ระบบฟาร์ม)</span>
+          </NavLink>
+
+          {session && (
+            <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={handleSignOut} 
+                className="w-full text-slate-600 hover:text-destructive hover:bg-destructive/10 rounded-xl justify-center font-bold text-xs"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                ออกจากระบบ (Sign Out)
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
     </nav>
   );
 };

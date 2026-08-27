@@ -1,10 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
 import {
   Upload, Book, Store, Utensils,
   Sprout, Droplets, BookOpen, Search, RefreshCw,
-  ArrowRight, ShieldCheck, Cpu, HeartPulse
+  ArrowRight, ShieldCheck, Cpu, HeartPulse, Sparkles, CheckCircle2,
+  ScanLine, Eye
 } from "lucide-react";
 import { useNavigate, useNavigationType, useLocation } from "react-router-dom";
 import { toast } from "sonner";
@@ -34,6 +37,10 @@ const Index = () => {
   const [detecting, setDetecting] = useState(false);
   const [isConsent, setIsConsent] = useState(false); // ✅ เพิ่ม State ยินยอมเก็บข้อมูล
   
+  // 🚀 AI Progress Bar & Stages
+  const [progressPercent, setProgressPercent] = useState<number>(0);
+  const [processStage, setProcessStage] = useState<number>(1);
+
   const [result, setResult] = useState<any>(null);
   const [bananaDetails, setBananaDetails] = useState<any>(null);
   const resultRef = useRef<HTMLDivElement>(null);
@@ -78,6 +85,8 @@ const Index = () => {
       setPreviewUrl(url);
       setResult(null);
       setBananaDetails(null);
+      setProgressPercent(0);
+      setProcessStage(1);
       setIsConsent(false); // ✅ Reset consent เมื่ออัปโหลดภาพใหม่
     }
   };
@@ -87,18 +96,42 @@ const Index = () => {
     setPreviewUrl("");
     setResult(null);
     setBananaDetails(null);
+    setProgressPercent(0);
+    setProcessStage(1);
     setIsConsent(false); // ✅ Reset consent
     window.scrollTo({ top: 0, behavior: "smooth" });
-    toast.info("ล้างข้อมูลเรียบร้อย เริ่มสแกนใหม่ได้เลยงับ");
+    toast.info("ล้างข้อมูลเรียบร้อย เริ่มสแกนใหม่ได้เลยครับ");
   };
 
   const handleDetect = async () => {
     if (!selectedImage) {
-      toast.error("กรุณาเลือกรูปภาพก่อนครับพี่");
+      toast.error("กรุณาเลือกรูปภาพก่อน");
       return;
     }
 
     setDetecting(true);
+    setProgressPercent(15);
+    setProcessStage(1);
+
+    // Simulated animated progress while awaiting backend API
+    const progressTimer = setInterval(() => {
+      setProgressPercent((prev) => {
+        if (prev < 30) {
+          setProcessStage(1);
+          return prev + 5;
+        } else if (prev < 65) {
+          setProcessStage(2);
+          return prev + 6;
+        } else if (prev < 88) {
+          setProcessStage(3);
+          return prev + 4;
+        } else if (prev < 96) {
+          setProcessStage(4);
+          return prev + 1;
+        }
+        return prev;
+      });
+    }, 180);
 
     try {
       const formData = new FormData();
@@ -115,6 +148,7 @@ const Index = () => {
 
       // ✅ เช็ค HTTP status ก่อน
       if (!response.ok) {
+        clearInterval(progressTimer);
         console.error("Backend HTTP Error:", response.status);
         toast.error("ระบบวิเคราะห์มีปัญหา กรุณาลองใหม่");
         return;
@@ -125,6 +159,7 @@ const Index = () => {
 
       // ❌ AI fail
       if (!data?.success) {
+        clearInterval(progressTimer);
         if (data?.reason === "no_banana_detected") {
           toast.error("ไม่พบกล้วยในภาพ กรุณาลองใหม่");
         } else if (data?.reason === "invalid_image") {
@@ -139,6 +174,7 @@ const Index = () => {
 
       // ✅ ตรวจ banana_key
       if (!data?.banana_key) {
+        clearInterval(progressTimer);
         toast.error("ไม่พบรหัสสายพันธุ์จาก AI");
         return;
       }
@@ -158,12 +194,14 @@ const Index = () => {
         .maybeSingle();
 
       if (error) {
+        clearInterval(progressTimer);
         console.error("Supabase error:", error);
         toast.error("เกิดข้อผิดพลาดในการดึงข้อมูลฐานข้อมูล");
         return;
       }
 
       if (!dbData) {
+        clearInterval(progressTimer);
         toast.error("ไม่พบข้อมูลสายพันธุ์ในฐานข้อมูล");
         return;
       }
@@ -178,25 +216,37 @@ const Index = () => {
         confidence: confidenceValue,
       };
 
-      setBananaDetails(dbData);
-      setResult(finalResult);
+      // Finish progress animation
+      clearInterval(progressTimer);
+      setProgressPercent(100);
+      setProcessStage(4);
 
-      sessionStorage.setItem(
-        "last_detect_result",
-        JSON.stringify(finalResult)
-      );
-      sessionStorage.setItem(
-        "last_banana_details",
-        JSON.stringify(dbData)
-      );
-      sessionStorage.setItem(
-        "last_preview_url",
-        previewUrl
-      );
+      setTimeout(() => {
+        setBananaDetails(dbData);
+        setResult(finalResult);
 
-      toast.success("วิเคราะห์กล้วยเรียบร้อย! 🍌");
+        sessionStorage.setItem(
+          "last_detect_result",
+          JSON.stringify(finalResult)
+        );
+        sessionStorage.setItem(
+          "last_banana_details",
+          JSON.stringify(dbData)
+        );
+        sessionStorage.setItem(
+          "last_preview_url",
+          previewUrl
+        );
+
+        toast.success("วิเคราะห์สายพันธุ์กล้วยเรียบร้อย! 🍌");
+
+        setTimeout(() => {
+          resultRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+        }, 300);
+      }, 400);
 
     } catch (err) {
+      clearInterval(progressTimer);
       console.error("Detect error:", err);
       toast.error("เกิดข้อผิดพลาดในการเชื่อมต่อ");
     } finally {
@@ -275,8 +325,8 @@ const Index = () => {
             </div>
 
             {/* ✅ ส่วน Consent: จะปรากฏเมื่อเลือกรูปแล้วแต่ยังไม่ได้วิเคราะห์ */}
-            {previewUrl && !result && (
-              <div className="bg-blue-50/50 border border-blue-100 rounded-xl p-4 animate-in fade-in slide-in-from-top-2 duration-300">
+            {previewUrl && !result && !detecting && (
+              <div className="bg-blue-50/60 border border-blue-100 rounded-xl p-4 animate-in fade-in slide-in-from-top-2 duration-300">
                 <div className="flex items-start gap-3">
                   <div className="mt-1">
                     <input
@@ -298,16 +348,46 @@ const Index = () => {
               </div>
             )}
 
+            {/* 🚀 AI Live Analysis Progress Bar */}
+            {detecting && (
+              <div className="rounded-2xl border-2 border-amber-400 bg-gradient-to-b from-amber-50/90 via-yellow-50/50 to-white p-5 sm:p-6 shadow-md space-y-3.5 animate-in fade-in zoom-in-95 duration-300">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-slate-900 font-bold text-sm sm:text-base">
+                    <Sparkles className="w-5 h-5 text-amber-500 animate-spin" />
+                    <span>กระบวนการวิเคราะห์สายพันธุ์กล้วยด้วย AI</span>
+                  </div>
+                  <Badge className="bg-amber-400 text-slate-950 font-black text-xs px-2.5 py-0.5 shadow-sm border border-amber-500/30">
+                    {progressPercent}%
+                  </Badge>
+                </div>
+
+                {/* The Dynamic Progress Bar */}
+                <div className="space-y-1.5">
+                  <div className="h-4 w-full rounded-full bg-slate-100 overflow-hidden p-0.5 border border-amber-300/80 shadow-inner">
+                    <div 
+                      className="h-full rounded-full bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-500 transition-all duration-300 shadow-sm"
+                      style={{ width: `${progressPercent}%` }}
+                    />
+                  </div>
+                  <div className="flex justify-between text-[11px] text-muted-foreground font-medium px-1">
+                    <span>เริ่มต้นการสแกน</span>
+                    <span>กำลังประมวลผลโมเดล AI</span>
+                    <span>เสร็จสิ้น</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {previewUrl && !result && (
               <Button
                 onClick={handleDetect}
                 disabled={detecting}
                 size="lg"
-                className="w-full h-14 text-lg font-bold"
+                className="w-full h-14 text-lg font-black bg-amber-400 hover:bg-amber-500 text-slate-950 shadow-md transition-all active:scale-98 border border-amber-500/30"
               >
                 {detecting ? (
                   <>
-                    <RefreshCw className="w-5 h-5 mr-2 animate-spin" /> กำลังวิเคราะห์...
+                    <RefreshCw className="w-5 h-5 mr-2 animate-spin" /> กำลังประมวลผลกระบวนการ AI ({progressPercent}%)...
                   </>
                 ) : (
                   <>
@@ -407,9 +487,9 @@ const Index = () => {
             <div className="w-16 h-16 bg-secondary/10 rounded-full flex items-center justify-center mx-auto mb-4">
               <Book className="w-8 h-8 text-secondary" />
             </div>
-            <h3 className="text-xl font-bold mb-2">Expert Knowledge</h3>
-            <p className="text-muted-foreground">
-              องค์ความรู้เกี่ยวกับกล้วยไทยมากกว่า 10 สายพันธุ์
+            <h3 className="text-xl font-bold mb-2">Knowledge Hub</h3>
+            <p className="text-muted-foreground text-sm">
+              คลังความรู้และสารานุกรมกล้วยไทย ทุกเรื่องโรคพืช สายพันธุ์ และวิธีดูแลรักษา
             </p>
           </Card>
           <Card className="p-6 text-center hover:shadow-soft transition-shadow">

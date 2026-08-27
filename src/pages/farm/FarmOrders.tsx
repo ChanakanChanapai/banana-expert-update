@@ -446,32 +446,40 @@ loadData(); // ✅ ใช้อันนี้
 
           {/* ---------- Ship Modal ---------- */}
 {shippingId && (
-  <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
-    <Card className="p-6 space-y-4 w-96">
-      <h3 className="font-semibold text-lg">
-        ข้อมูลการจัดส่ง
+  <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+    <Card className="p-6 space-y-4 w-full max-w-md shadow-2xl dropdown-panel rounded-2xl border bg-card">
+      <h3 className="font-bold text-lg text-foreground">
+        ข้อมูลการจัดส่งสินค้า
       </h3>
 
       {/* ชื่อขนส่ง */}
-      <Input
-        placeholder="ชื่อขนส่ง (เช่น Kerry, Flash, ไปรษณีย์ไทย)"
-        value={carrier}
-        onChange={(e) => setCarrier(e.target.value)}
-      />
+      <div className="space-y-1.5">
+        <label className="text-xs font-semibold text-muted-foreground">บริษัทขนส่ง</label>
+        <Input
+          placeholder="ชื่อขนส่ง (เช่น Kerry, Flash, ไปรษณีย์ไทย)"
+          value={carrier}
+          onChange={(e) => setCarrier(e.target.value)}
+          className="rounded-xl"
+        />
+      </div>
 
       {/* Tracking */}
-      <Input
-        placeholder="เลขที่ติดตามพัสดุ"
-        value={tracking}
-        onChange={(e) => setTracking(e.target.value)}
-      />
+      <div className="space-y-1.5">
+        <label className="text-xs font-semibold text-muted-foreground">หมายเลขติดตามพัสดุ (Tracking No.)</label>
+        <Input
+          placeholder="เลขที่ติดตามพัสดุ"
+          value={tracking}
+          onChange={(e) => setTracking(e.target.value)}
+          className="rounded-xl"
+        />
+      </div>
 
-      <div className="flex gap-2">
-        <Button variant="outline" className="w-full" onClick={() => setShippingId(null)}>
+      <div className="flex gap-2 pt-2">
+        <Button variant="outline" className="w-full rounded-xl" onClick={() => setShippingId(null)}>
           ยกเลิก
         </Button>
         <Button
-          className="w-full"
+          className="w-full rounded-xl"
           disabled={!carrier.trim() || !tracking.trim()}
           onClick={() => {
             updateOrder(shippingId, "shipped", {
