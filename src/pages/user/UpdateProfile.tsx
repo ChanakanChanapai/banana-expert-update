@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { ArrowLeft, Loader2, User, Store } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
+import ThaiAddressSelector from "@/components/address/ThaiAddressSelector";
  
 /* ---------- Types ---------- */
  
@@ -315,15 +316,14 @@ const UpdateProfile = () => {
                 </div>
  
                 <div>
-                  <Label>ที่อยู่</Label>
-                  <Textarea
-                    rows={4}
+                  <Label className="mb-2 block">ที่อยู่จัดส่งสินค้า</Label>
+                  <ThaiAddressSelector
                     value={profileForm.address}
-                    onChange={(e) =>
-                      setProfileForm({
-                        ...profileForm,
-                        address: e.target.value,
-                      })
+                    onChange={(fullAddress) =>
+                      setProfileForm((prev) => ({
+                        ...prev,
+                        address: fullAddress,
+                      }))
                     }
                   />
                 </div>
@@ -358,14 +358,14 @@ const UpdateProfile = () => {
                   </div>
  
                   <div>
-                    <Label>ที่อยู่ *</Label>
-                    <Input
+                    <Label className="mb-2 block">ที่ตั้งฟาร์ม *</Label>
+                    <ThaiAddressSelector
                       value={farmForm.farm_location}
-                      onChange={(e) =>
-                        setFarmForm({
-                          ...farmForm,
-                          farm_location: e.target.value,
-                        })
+                      onChange={(fullAddress) =>
+                        setFarmForm((prev) => ({
+                          ...prev,
+                          farm_location: fullAddress,
+                        }))
                       }
                     />
                   </div>

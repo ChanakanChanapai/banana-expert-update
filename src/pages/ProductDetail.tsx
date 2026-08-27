@@ -21,6 +21,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
+import ThaiAddressSelector from "@/components/address/ThaiAddressSelector";
 
 /* ---------- Types ---------- */
 
@@ -77,7 +78,7 @@ const ProductDetail = () => {
       navigate("/market");
       return;
     }
-    
+
     window.scrollTo(0, 0);
     loadProduct(id);
   }, [id, navigate]);
@@ -119,38 +120,38 @@ const ProductDetail = () => {
   /* ---------- Load User Address ---------- */
 
   const loadUserAddress = async () => {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-  if (!user) {
-    toast.error("กรุณาเข้าสู่ระบบ");
-    return false;
-  }
+    if (!user) {
+      toast.error("กรุณาเข้าสู่ระบบ");
+      return false;
+    }
 
-  const { data, error } = await supabase
-    .from("profiles")
-    .select("full_name, phone, address")
-    .eq("id", user.id)
-    .maybeSingle();
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("full_name, phone, address")
+      .eq("id", user.id)
+      .maybeSingle();
 
-  if (error) {
-    toast.error("โหลดที่อยู่ไม่สำเร็จ");
-    return false;
-  }
+    if (error) {
+      toast.error("โหลดที่อยู่ไม่สำเร็จ");
+      return false;
+    }
 
-  if (data?.address) {
-    setSavedFullName(data.full_name || null);
-    setSavedPhone(data.phone || null);
-    setSavedAddress(data.address);
-    setAddressType("saved");
-  } else {
-    setSavedAddress(null);
-    setAddressType("new");
-  }
+    if (data?.address) {
+      setSavedFullName(data.full_name || null);
+      setSavedPhone(data.phone || null);
+      setSavedAddress(data.address);
+      setAddressType("saved");
+    } else {
+      setSavedAddress(null);
+      setAddressType("new");
+    }
 
-  return true;
-};
+    return true;
+  };
 
 
   /* ---------- Reserve ---------- */
@@ -161,76 +162,76 @@ const ProductDetail = () => {
   };
 
   const handleReserve = async () => {
-  if (!product) return;
+    if (!product) return;
 
-  if (quantity > product.available_quantity) {
-  toast.error("จำนวนเกินสต็อกที่มีอยู่");
-  return;
-}
-
-  if (quantity <= 0) {
-  toast.error("จำนวนต้องมากกว่า 0");
-  return;
-}
-
-  if (addressType === "new") {
-    if (!receiverName.trim()) {
-      toast.error("กรุณากรอกชื่อผู้รับ");
+    if (quantity > product.available_quantity) {
+      toast.error("จำนวนเกินสต็อกที่มีอยู่");
       return;
     }
 
-    if (!receiverPhone.trim()) {
-      toast.error("กรุณากรอกเบอร์โทร");
+    if (quantity <= 0) {
+      toast.error("จำนวนต้องมากกว่า 0");
       return;
     }
 
-    if (!newAddress.trim()) {
-      toast.error("กรุณากรอกที่อยู่ใหม่");
+    if (addressType === "new") {
+      if (!receiverName.trim()) {
+        toast.error("กรุณากรอกชื่อผู้รับ");
+        return;
+      }
+
+      if (!receiverPhone.trim()) {
+        toast.error("กรุณากรอกเบอร์โทร");
+        return;
+      }
+
+      if (!newAddress.trim()) {
+        toast.error("กรุณากรอกที่อยู่ใหม่");
+        return;
+      }
+    }
+
+    setSubmitting(true);
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      toast.error("กรุณาเข้าสู่ระบบ");
+      setSubmitting(false);
       return;
     }
-  }
 
-  setSubmitting(true);
+    const useProfile = addressType === "saved";
+    const finalReceiverName = useProfile ? (savedFullName || null) : receiverName.trim();
+    const finalReceiverPhone = useProfile ? (savedPhone || null) : receiverPhone.trim();
+    const deliveryAddress = useProfile ? (savedAddress || null) : newAddress.trim();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    const { error } = await supabase.rpc("reserve_v5", {
+      p_product_id: product.id,
+      p_quantity: quantity,
+      p_note: note.trim() || null,
+      p_use_profile: useProfile,
+      p_receiver_name: finalReceiverName,
+      p_receiver_phone: finalReceiverPhone,
+      p_delivery_address: deliveryAddress,
+    });
 
-  if (!user) {
-    toast.error("กรุณาเข้าสู่ระบบ");
+
+    if (error) {
+      toast.error(
+        error.message?.includes("สินค้าในสต็อกไม่เพียงพอ")
+          ? "สินค้าในสต็อกไม่เพียงพอ"
+          : "จองสินค้าไม่สำเร็จ");
+    } else {
+      toast.success("จองสินค้าเรียบร้อย");
+      setOpenReserve(false);
+      loadProduct(product.id);
+    }
+
     setSubmitting(false);
-    return;
-  }
-
-  const useProfile = addressType === "saved";
-  const finalReceiverName = useProfile ? (savedFullName || null) : receiverName.trim();
-  const finalReceiverPhone = useProfile ? (savedPhone || null) : receiverPhone.trim();
-  const deliveryAddress = useProfile ? (savedAddress || null) : newAddress.trim();
-
-  const { error } = await supabase.rpc("reserve_v5", {
-    p_product_id: product.id,
-    p_quantity: quantity,
-    p_note: note.trim() || null,
-    p_use_profile: useProfile,
-    p_receiver_name: finalReceiverName,
-    p_receiver_phone: finalReceiverPhone,
-    p_delivery_address: deliveryAddress,
-  });
-
-
-  if (error) {
-    toast.error(
-  error.message?.includes("สินค้าในสต็อกไม่เพียงพอ")
-    ? "สินค้าในสต็อกไม่เพียงพอ"
-    : "จองสินค้าไม่สำเร็จ" );
-  } else {
-    toast.success("จองสินค้าเรียบร้อย");
-    setOpenReserve(false);
-    loadProduct(product.id);
-  }
-
-  setSubmitting(false);
-};
+  };
 
 
   /* ---------- UI ---------- */
@@ -258,9 +259,9 @@ const ProductDetail = () => {
         <div className="grid md:grid-cols-2 gap-8 mt-6">
           <div className="aspect-square bg-muted rounded-xl flex items-center justify-center overflow-hidden">
             {product.image_url ? (
-              <img 
-                src={product.image_url} 
-                alt={product.name} 
+              <img
+                src={product.image_url}
+                alt={product.name}
                 className="w-full h-full object-cover"
               />
             ) : (
@@ -402,25 +403,29 @@ const ProductDetail = () => {
               </div>
             </RadioGroup>
 
-              {addressType === "new" && (
+            {addressType === "new" && (
               <div className="space-y-3">
-                <Input
-                  placeholder="ชื่อผู้รับ"
-                  value={receiverName}
-                  onChange={(e) => setReceiverName(e.target.value)}
-                />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <Input
+                    placeholder="ชื่อผู้รับ *"
+                    value={receiverName}
+                    onChange={(e) => setReceiverName(e.target.value)}
+                  />
 
-                <Input
-                  placeholder="เบอร์โทร"
-                  value={receiverPhone}
-                  onChange={(e) => setReceiverPhone(e.target.value)}
-                />
+                  <Input
+                    placeholder="เบอร์โทร *"
+                    value={receiverPhone}
+                    onChange={(e) => setReceiverPhone(e.target.value)}
+                  />
+                </div>
 
-                <Textarea
-                  placeholder="ที่อยู่จัดส่ง"
-                  value={newAddress}
-                  onChange={(e) => setNewAddress(e.target.value)}
-                />
+                <div>
+                  <Label className="text-xs text-muted-foreground mb-1 block">ระบุที่อยู่จัดส่ง</Label>
+                  <ThaiAddressSelector
+                    value={newAddress}
+                    onChange={(fullAddress) => setNewAddress(fullAddress)}
+                  />
+                </div>
               </div>
             )}
 
