@@ -215,7 +215,24 @@ const OrderDetail = () => {
         if (error) throw error;
  
         if (data) {
-          toast.success("Order confirmed");
+          toast.success("ยืนยันการจองเรียบร้อยแล้ว");
+
+          // 🔔 ส่งการแจ้งเตือนกลับไปยังผู้ซื้อ (User 1)
+          if (order.user_id) {
+            try {
+              await supabase.from("notifications").insert({
+                user_id: order.user_id,
+                title: "ฟาร์มยืนยันคำสั่งจองแล้ว!",
+                message: `สวนได้ยืนยันรายการจอง "${order.products?.name || "ผลผลิตกล้วย"}" ของคุณเรียบร้อยแล้ว กำลังดูแลผลผลิตตามรอบเก็บเกี่ยว`,
+                type: "confirmed",
+                read: false,
+                link: "/dashboard/orders",
+              });
+            } catch (e) {
+              console.error("Notify buyer error:", e);
+            }
+          }
+
           navigate(`/farm/orders/${data}`); // ✅ ไปหน้า order ใหม่
         }
  
@@ -225,23 +242,51 @@ const OrderDetail = () => {
       const updates: Record<string, unknown> = { status: newStatus };
  
       if (newStatus === "confirmed") {
- 
-  updates.confirmed_at = new Date().toISOString();
- 
+        updates.confirmed_at = new Date().toISOString();
+
+        if (order.user_id) {
+          try {
+            await supabase.from("notifications").insert({
+              user_id: order.user_id,
+              title: "ฟาร์มยืนยันคำสั่งจองแล้ว!",
+              message: `สวนได้ยืนยันรายการจอง "${order.products?.name || "ผลผลิตกล้วย"}" ของคุณเรียบร้อยแล้ว`,
+              type: "confirmed",
+              read: false,
+              link: "/dashboard/orders",
+            });
+          } catch (e) {
+            console.error("Notify buyer error:", e);
+          }
+        }
       } else if (newStatus === "shipped") {
         if (!trackingNumber.trim()) {
-          toast.error("Please enter a tracking number");
+          toast.error("กรุณาระบุหมายเลขพัสดุ");
           setUpdating(false);
           return;
         }
         if (!carrier.trim()) {
-          toast.error("Please enter carrier");
+          toast.error("กรุณาระบุบริษัทขนส่ง");
           setUpdating(false);
           return;
         }
         updates.shipped_at = new Date().toISOString();
         updates.tracking_number = trackingNumber.trim();
         updates.carrier = carrier.trim();
+
+        if (order.user_id) {
+          try {
+            await supabase.from("notifications").insert({
+              user_id: order.user_id,
+              title: "ผลผลิตเริ่มจัดส่งแล้ว!",
+              message: `ผลผลิต "${order.products?.name || "กล้วย"}" จัดส่งโดย ${carrier.trim()} (เลขพัสดุ: ${trackingNumber.trim()})`,
+              type: "shipped",
+              read: false,
+              link: "/dashboard/orders",
+            });
+          } catch (e) {
+            console.error("Notify buyer error:", e);
+          }
+        }
       } else if (newStatus === "delivered") {
         updates.delivered_at = new Date().toISOString();
       }
@@ -254,7 +299,7 @@ const OrderDetail = () => {
  
       if (error) throw error;
  
-      toast.success(`Order ${newStatus}`);
+      toast.success("อัปเดตสถานะคำสั่งซื้อเรียบร้อยแล้ว");
       await loadOrder(order.id);
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "Failed to update order";

@@ -18,7 +18,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
 
 export interface NotificationItem {
   id: string;
@@ -56,6 +56,47 @@ export const NotificationBell = () => {
     return () => subscription.unsubscribe();
   }, []);
 
+  // 🔔 Real-time Listener: ดักจับแจ้งเตือนใหม่ทันทีเมื่อมีการ Insert ลงตาราง notifications
+  useEffect(() => {
+    if (!userId) return;
+
+    const channel = supabase
+      .channel(`realtime-notifications-${userId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "notifications",
+          filter: `user_id=eq.${userId}`,
+        },
+        (payload) => {
+          const newNotif = payload.new as NotificationItem;
+          setNotifications((prev) => {
+            if (prev.some((n) => n.id === newNotif.id)) return prev;
+            return [newNotif, ...prev];
+          });
+
+          // เด้ง Toast แจ้งเตือนแบบทันท่วงทีบนหน้าจอ (ทั้ง Mobile & Desktop)
+          toast.info(newNotif.title, {
+            description: newNotif.message,
+            duration: 6000,
+            action: newNotif.link
+              ? {
+                  label: "ดูข้อมูล",
+                  onClick: () => navigate(newNotif.link!),
+                }
+              : undefined,
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [userId, navigate]);
+
   const fetchNotifications = async (currentUserId: string) => {
     try {
       const { data, error } = await supabase
@@ -63,7 +104,7 @@ export const NotificationBell = () => {
         .select("*")
         .eq("user_id", currentUserId)
         .order("created_at", { ascending: false })
-        .limit(20);
+        .limit(30);
 
       if (!error && data) {
         setNotifications(data as NotificationItem[]);
@@ -79,17 +120,17 @@ export const NotificationBell = () => {
     try {
       setLoading(true);
       const {
-        data: { user },
-      } = await supabase.auth.getUser();
+        data: { session },
+      } = await supabase.auth.getSession();
 
-      if (!user) {
+      if (!session?.user) {
         setNotifications([]);
         setUserId(null);
         return;
       }
 
-      setUserId(user.id);
-      await fetchNotifications(user.id);
+      setUserId(session.user.id);
+      await fetchNotifications(session.user.id);
     } catch (err) {
       console.error("Load notifications error:", err);
       setNotifications([]);
@@ -122,11 +163,15 @@ export const NotificationBell = () => {
       prev.map((n) => (n.id === notif.id ? { ...n, read: true } : n))
     );
 
-    if (userId && !notif.id.startsWith("notif-") && !notif.id.startsWith("welcome-")) {
-      await supabase
-        .from("notifications")
-        .update({ read: true })
-        .eq("id", notif.id);
+    if (userId && notif.id) {
+      try {
+        await supabase
+          .from("notifications")
+          .update({ read: true })
+          .eq("id", notif.id);
+      } catch (e) {
+        console.error("Mark individual read error:", e);
+      }
     }
 
     setOpen(false);
@@ -204,13 +249,13 @@ export const NotificationBell = () => {
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <button
-          className="relative p-2.5 rounded-xl text-slate-700 hover:text-slate-900 hover:bg-amber-100/70 active:scale-95 transition-all outline-none"
+          className="relative p-2 rounded-xl text-slate-700 hover:text-slate-900 hover:bg-amber-100/70 active:scale-95 transition-all outline-none"
           title="ศูนย์แจ้งเตือนผลผลิต"
           aria-label="แจ้งเตือน"
         >
           <Bell className="w-5 h-5 text-slate-700 hover:text-slate-900 transition-colors" />
           {unreadCount > 0 && (
-            <span className="absolute top-1.5 right-1.5 flex h-4 min-w-[16px] px-1 items-center justify-center rounded-full bg-amber-500 text-[10px] font-black text-slate-950 shadow-sm animate-in zoom-in-50 duration-200">
+            <span className="absolute top-1 right-1 flex h-4 min-w-[16px] px-1 items-center justify-center rounded-full bg-amber-500 text-[10px] font-black text-slate-950 shadow-sm animate-in zoom-in-50 duration-200">
               {unreadCount > 9 ? "9+" : unreadCount}
             </span>
           )}
@@ -220,19 +265,19 @@ export const NotificationBell = () => {
       <PopoverContent
         align="end"
         sideOffset={8}
-        className="w-[calc(100vw-32px)] sm:w-[380px] p-0 rounded-2xl shadow-2xl border border-amber-200/80 bg-white overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-150"
+        className="w-[calc(100vw-24px)] max-w-[390px] sm:w-[380px] p-0 rounded-2xl shadow-2xl border border-amber-200/80 bg-white overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-150 mr-2 sm:mr-0"
       >
         {/* Header */}
-        <div className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-white px-4 py-3.5 flex items-center justify-between shadow-xs">
+        <div className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-white px-4 py-3 flex items-center justify-between shadow-xs">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center text-white">
+            <div className="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center text-white shrink-0">
               <Bell className="w-4 h-4" />
             </div>
             <div>
               <h4 className="font-bold text-sm text-white leading-tight">
                 ศูนย์แจ้งเตือนผลผลิต
               </h4>
-              <p className="text-[11px] text-white/90 font-medium">
+              <p className="text-[10px] sm:text-[11px] text-white/90 font-medium">
                 ติดตามสถานะรอบเก็บเกี่ยวและคำสั่งจอง
               </p>
             </div>
@@ -241,7 +286,7 @@ export const NotificationBell = () => {
           {unreadCount > 0 && (
             <button
               onClick={markAllAsRead}
-              className="text-[11px] font-semibold bg-white/20 hover:bg-white/30 text-white px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1"
+              className="text-[11px] font-semibold bg-white/20 hover:bg-white/30 text-white px-2 py-1 rounded-lg transition-colors flex items-center gap-1 shrink-0"
             >
               <Check className="w-3 h-3" />
               อ่านทั้งหมด
@@ -250,8 +295,8 @@ export const NotificationBell = () => {
         </div>
 
         {/* Status subhead */}
-        <div className="px-4 py-2 bg-slate-50 border-b border-slate-100 flex items-center justify-between text-xs text-slate-500 font-medium">
-          <span>
+        <div className="px-4 py-1.5 bg-slate-50 border-b border-slate-100 flex items-center justify-between text-xs text-slate-500 font-medium">
+          <span className="text-[11px]">
             {unreadCount > 0
               ? `มี ${unreadCount} รายการที่ยังไม่ได้อ่าน`
               : "ไม่มีการแจ้งเตือนใหม่"}
@@ -262,14 +307,14 @@ export const NotificationBell = () => {
         </div>
 
         {/* Notifications List */}
-        <div className="max-h-[380px] overflow-y-auto divide-y divide-slate-100">
+        <div className="max-h-[360px] sm:max-h-[380px] overflow-y-auto divide-y divide-slate-100">
           {notifications.length === 0 ? (
             <div className="py-12 px-4 text-center flex flex-col items-center justify-center space-y-2 text-slate-400">
-              <Inbox className="w-10 h-10 stroke-1" />
+              <Inbox className="w-10 h-10 stroke-1 text-slate-300" />
               <p className="text-sm font-medium text-slate-600">
                 ยังไม่มีการแจ้งเตือนในขณะนี้
               </p>
-              <p className="text-xs text-slate-400 max-w-xs">
+              <p className="text-xs text-slate-400 max-w-xs leading-relaxed">
                 เมื่อคุณทำการสั่งจองผลผลิต หรือฟาร์มเริ่มจัดส่ง จะมีการแจ้งเตือนแสดงที่นี่
               </p>
             </div>
@@ -278,12 +323,12 @@ export const NotificationBell = () => {
               <div
                 key={notif.id}
                 onClick={() => handleNotificationClick(notif)}
-                className={`p-3.5 hover:bg-amber-50/50 transition-colors cursor-pointer flex items-start gap-3 text-left relative group ${
-                  !notif.read ? "bg-amber-50/20" : "bg-white"
+                className={`p-3 sm:p-3.5 hover:bg-amber-50/50 active:bg-amber-100/50 transition-colors cursor-pointer flex items-start gap-3 text-left relative group ${
+                  !notif.read ? "bg-amber-50/30" : "bg-white"
                 }`}
               >
                 {!notif.read && (
-                  <span className="absolute top-4 right-3.5 w-2 h-2 rounded-full bg-amber-500 ring-2 ring-white" />
+                  <span className="absolute top-3.5 right-3 w-2 h-2 rounded-full bg-amber-500 ring-2 ring-white" />
                 )}
 
                 {renderIcon(notif.type)}
@@ -296,13 +341,13 @@ export const NotificationBell = () => {
                   >
                     {notif.title}
                   </h5>
-                  <p className="text-xs text-slate-600 line-clamp-2 mt-1 leading-relaxed">
+                  <p className="text-xs text-slate-600 line-clamp-2 mt-0.5 leading-relaxed">
                     {notif.message}
                   </p>
-                  <div className="flex items-center justify-between mt-2 text-[11px] text-slate-400">
+                  <div className="flex items-center justify-between mt-1.5 text-[11px] text-slate-400">
                     <span>{formatThaiTime(notif.created_at)}</span>
-                    <span className="text-amber-700 group-hover:text-amber-800 font-semibold flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                      ดูรายละเอียด
+                    <span className="text-amber-700 font-semibold flex items-center gap-0.5 opacity-80 group-hover:opacity-100 transition-opacity">
+                      ดูข้อมูล
                       <ChevronRight className="w-3 h-3" />
                     </span>
                   </div>
@@ -313,7 +358,7 @@ export const NotificationBell = () => {
         </div>
 
         {/* Footer */}
-        <div className="p-2.5 bg-slate-50 border-t border-slate-100 text-center">
+        <div className="p-2 bg-slate-50 border-t border-slate-100 text-center">
           <Button
             variant="ghost"
             size="sm"

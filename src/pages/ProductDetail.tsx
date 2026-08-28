@@ -29,6 +29,7 @@ interface FarmProfile {
   id: string;
   farm_name: string;
   farm_location: string;
+  user_id?: string;
 }
 
 interface Product {
@@ -101,7 +102,8 @@ const ProductDetail = () => {
         farm: farm_profiles (
           id,
           farm_name,
-          farm_location
+          farm_location,
+          user_id
         )
       `)
       .eq("id", productId)
@@ -225,8 +227,27 @@ const ProductDetail = () => {
           ? "สินค้าในสต็อกไม่เพียงพอ"
           : "จองสินค้าไม่สำเร็จ");
     } else {
-      toast.success("จองสินค้าเรียบร้อย");
+      toast.success("ส่งคำขอสั่งจองผลผลิตเรียบร้อยแล้ว");
       setOpenReserve(false);
+
+      // 🔔 ส่งการแจ้งเตือน Real-time ไปยังเจ้าของฟาร์ม (User 2)
+      if (product.farm?.user_id) {
+        try {
+          const clientName = finalReceiverName || "ลูกค้า";
+          const subtotal = Number(product.price_per_unit) * Number(quantity);
+          await supabase.from("notifications").insert({
+            user_id: product.farm.user_id,
+            title: "มีคำขอสั่งจองผลผลิตใหม่!",
+            message: `คุณ ${clientName} ได้สั่งจอง "${product.name}" จำนวน ${quantity} ${product.unit} (ยอดรวม ฿${subtotal.toLocaleString()})`,
+            type: "new_order",
+            read: false,
+            link: "/farm/orders",
+          });
+        } catch (notifErr) {
+          console.error("Failed to send farmer notification:", notifErr);
+        }
+      }
+
       loadProduct(product.id);
     }
 
