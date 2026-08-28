@@ -9,8 +9,21 @@ import {
   Menu, 
   X,
   AlertTriangle,
-  Tractor 
+  Tractor,
+  ChevronDown,
+  Settings,
+  Package,
+  Check,
+  Sparkles
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -176,55 +189,134 @@ const Navbar = () => {
           </NavLink>
 
           {session ? (
-            <div className="flex items-center gap-2.5 border-l border-amber-200/80 pl-3 ml-2">
-              {/* 🔄 Switcher Toggle: ผู้ซื้อ / ชาวสวน (Yellow Theme) */}
-              {isFarmRole && (
-                <div className="flex items-center p-1 rounded-full bg-amber-100/90 dark:bg-amber-950/50 border border-amber-300 dark:border-amber-700 shadow-inner">
+            <div className="flex items-center gap-2 border-l border-amber-200/80 pl-3 ml-2">
+              {/* 🌟 SMART PROFILE & MODE CAPSULE DROPDOWN */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
                   <button
                     type="button"
-                    onClick={() => navigate("/dashboard")}
-                    className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs transition-all duration-200 cursor-pointer ${
-                      !location.pathname.startsWith("/farm")
-                        ? "bg-amber-400 text-slate-950 shadow-sm border border-amber-500/40 font-black"
-                        : "text-amber-950/70 dark:text-amber-200/70 hover:text-amber-950 dark:hover:text-amber-100 hover:bg-amber-200/50 font-bold"
+                    className={`group flex items-center gap-2 pl-3.5 pr-2 py-1.5 rounded-full border shadow-sm transition-all duration-200 cursor-pointer active:scale-95 select-none ${
+                      isFarmRole && location.pathname.startsWith("/farm")
+                        ? "bg-amber-400 text-slate-950 border-amber-500/40 hover:bg-amber-500 shadow-amber-200/60"
+                        : "bg-amber-100/90 text-slate-950 border-amber-300 hover:bg-amber-200/90"
                     }`}
                   >
-                    <User className="w-3.5 h-3.5" />
-                    <span>ผู้ซื้อ</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => navigate("/farm/dashboard")}
-                    className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs transition-all duration-200 cursor-pointer ${
-                      location.pathname.startsWith("/farm")
-                        ? "bg-amber-400 text-slate-950 shadow-sm border border-amber-500/40 font-black"
-                        : "text-amber-950/70 dark:text-amber-200/70 hover:text-amber-950 dark:hover:text-amber-100 hover:bg-amber-200/50 font-bold"
-                    }`}
-                  >
-                    <Tractor className="w-3.5 h-3.5" />
-                    <span>ชาวสวน</span>
-                  </button>
-                </div>
-              )}
+                    <div className="flex items-center gap-1.5 font-black text-xs">
+                      {isFarmRole ? (
+                        location.pathname.startsWith("/farm") ? (
+                          <>
+                            <Tractor className="w-4 h-4 text-slate-950" />
+                            <span>โหมดชาวสวน</span>
+                          </>
+                        ) : (
+                          <>
+                            <User className="w-4 h-4 text-amber-800" />
+                            <span>โหมดผู้ซื้อ</span>
+                          </>
+                        )
+                      ) : (
+                        <>
+                          <User className="w-4 h-4 text-amber-800" />
+                          <span>โปรไฟล์</span>
+                        </>
+                      )}
+                    </div>
 
-              <Button 
-                variant="outline" 
-                onClick={() => navigate("/dashboard")} 
-                className="group gap-2 rounded-xl border-slate-300 bg-white text-slate-900 hover:bg-amber-100 font-bold shadow-sm transition-all text-xs sm:text-sm"
-              >
-                <User className="w-4 h-4 text-amber-500 transition-colors" /> 
-                Profile
-              </Button>
-              
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={() => setShowLogoutConfirm(true)} 
-                title="ออกจากระบบ"
-                className="rounded-xl text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition-all duration-200"
-              >
-                <LogOut className="w-4 h-4" />
-              </Button>
+                    <div className="w-5 h-5 rounded-full bg-black/10 flex items-center justify-center group-hover:bg-black/20 transition-colors">
+                      <ChevronDown className="w-3 h-3 text-current transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                    </div>
+                  </button>
+                </DropdownMenuTrigger>
+
+                <DropdownMenuContent align="end" className="w-64 p-2 rounded-2xl bg-card border shadow-xl animate-in fade-in-50 zoom-in-95">
+                  {/* User Info Header */}
+                  <DropdownMenuLabel className="p-2 font-normal">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-9 h-9 rounded-xl bg-amber-400/30 text-amber-800 font-bold flex items-center justify-center text-sm border border-amber-400/40">
+                        {session?.user?.email?.charAt(0).toUpperCase() || "U"}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-bold text-foreground truncate">
+                          {session?.user?.user_metadata?.full_name || session?.user?.email?.split("@")[0] || "ผู้ใช้งาน"}
+                        </p>
+                        <span className="inline-flex items-center text-[10px] font-semibold text-amber-700 dark:text-amber-400">
+                          {isFarmRole ? "🌾 บัญชีฟาร์มเกษตรกร" : "🍌 สมาชิกทั่วไป"}
+                        </span>
+                      </div>
+                    </div>
+                  </DropdownMenuLabel>
+
+                  <DropdownMenuSeparator className="my-1" />
+
+                  {/* Switch Modes Section (If Farm Owner) */}
+                  {isFarmRole && (
+                    <>
+                      <div className="px-2 py-1 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                        สลับโหมดการทำงาน
+                      </div>
+                      <DropdownMenuItem
+                        onClick={() => navigate("/dashboard")}
+                        className={`flex items-center justify-between p-2.5 rounded-xl text-xs font-bold cursor-pointer transition-colors ${
+                          !location.pathname.startsWith("/farm")
+                            ? "bg-amber-100 text-amber-950 dark:bg-amber-950/60 dark:text-amber-200 font-black"
+                            : "text-foreground hover:bg-amber-50"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <User className="w-4 h-4 text-amber-600" />
+                          <span>โหมดผู้ซื้อ (User Dashboard)</span>
+                        </div>
+                        {!location.pathname.startsWith("/farm") && <Check className="w-3.5 h-3.5 text-amber-700" />}
+                      </DropdownMenuItem>
+
+                      <DropdownMenuItem
+                        onClick={() => navigate("/farm/dashboard")}
+                        className={`flex items-center justify-between p-2.5 rounded-xl text-xs font-bold cursor-pointer transition-colors ${
+                          location.pathname.startsWith("/farm")
+                            ? "bg-amber-400 text-slate-950 font-black shadow-xs"
+                            : "text-foreground hover:bg-amber-50"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <Tractor className="w-4 h-4 text-amber-800" />
+                          <span>โหมดชาวสวน (Farm Dashboard)</span>
+                        </div>
+                        {location.pathname.startsWith("/farm") && <Check className="w-3.5 h-3.5 text-slate-950" />}
+                      </DropdownMenuItem>
+
+                      <DropdownMenuSeparator className="my-1" />
+                    </>
+                  )}
+
+                  {/* Common Quick Actions */}
+                  <DropdownMenuItem
+                    onClick={() => navigate(location.pathname.startsWith("/farm") ? "/farm/orders" : "/dashboard/orders")}
+                    className="flex items-center gap-2 p-2.5 rounded-xl text-xs font-medium cursor-pointer text-foreground hover:bg-amber-50"
+                  >
+                    <Package className="w-4 h-4 text-slate-500" />
+                    <span>{location.pathname.startsWith("/farm") ? "คำสั่งซื้อจากลูกค้า" : "รายการคำสั่งซื้อของฉัน"}</span>
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem
+                    onClick={() => navigate("/profile")}
+                    className="flex items-center gap-2 p-2.5 rounded-xl text-xs font-medium cursor-pointer text-foreground hover:bg-amber-50"
+                  >
+                    <Settings className="w-4 h-4 text-slate-500" />
+                    <span>แก้ไขโปรไฟล์ & ที่อยู่</span>
+                  </DropdownMenuItem>
+
+                  <DropdownMenuSeparator className="my-1" />
+
+                  {/* Logout Action */}
+                  <DropdownMenuItem
+                    onClick={() => setShowLogoutConfirm(true)}
+                    className="flex items-center gap-2 p-2.5 rounded-xl text-xs font-bold cursor-pointer text-destructive hover:bg-destructive/10"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span>ออกจากระบบ</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           ) : (
             <Button 
@@ -239,44 +331,26 @@ const Navbar = () => {
         {/* 📱 Mobile & Tablet Hamburger Toggle */}
         <div className="flex lg:hidden items-center gap-2">
           {session ? (
-            <div className="flex items-center gap-1.5">
-              {isFarmRole && (
-                <div className="flex items-center p-0.5 rounded-full bg-amber-100 border border-amber-300">
-                  <button
-                    onClick={() => navigate("/dashboard")}
-                    className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold ${
-                      !location.pathname.startsWith("/farm")
-                        ? "bg-amber-400 text-slate-950 shadow-xs font-black border border-amber-500/30"
-                        : "text-amber-900/70"
-                    }`}
-                  >
-                    <User className="w-3 h-3" />
-                    <span>ผู้ซื้อ</span>
-                  </button>
-                  <button
-                    onClick={() => navigate("/farm/dashboard")}
-                    className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold ${
-                      location.pathname.startsWith("/farm")
-                        ? "bg-amber-400 text-slate-950 shadow-xs font-black border border-amber-500/30"
-                        : "text-amber-900/70"
-                    }`}
-                  >
-                    <Tractor className="w-3 h-3" />
-                    <span>ชาวสวน</span>
-                  </button>
-                </div>
+            <button
+              onClick={() => setMobileMenuOpen(true)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border shadow-xs ${
+                isFarmRole && location.pathname.startsWith("/farm")
+                  ? "bg-amber-400 text-slate-950 border-amber-500/40"
+                  : "bg-amber-100 text-slate-950 border-amber-300"
+              }`}
+            >
+              {isFarmRole && location.pathname.startsWith("/farm") ? (
+                <>
+                  <Tractor className="w-3.5 h-3.5 text-slate-950" />
+                  <span>ชาวสวน</span>
+                </>
+              ) : (
+                <>
+                  <User className="w-3.5 h-3.5 text-amber-700" />
+                  <span>{isFarmRole ? "ผู้ซื้อ" : "โปรไฟล์"}</span>
+                </>
               )}
-
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => navigate("/dashboard")} 
-                className="rounded-xl border-slate-300 text-xs font-bold gap-1 px-2 h-8"
-              >
-                <User className="w-3.5 h-3.5 text-amber-500" />
-                Profile
-              </Button>
-            </div>
+            </button>
           ) : (
             <Button 
               size="sm"
