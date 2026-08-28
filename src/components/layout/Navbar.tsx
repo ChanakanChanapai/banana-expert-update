@@ -290,14 +290,6 @@ const Navbar = () => {
 
                   {/* Common Quick Actions */}
                   <DropdownMenuItem
-                    onClick={() => navigate(location.pathname.startsWith("/farm") ? "/farm/orders" : "/dashboard/orders")}
-                    className="flex items-center gap-2 p-2.5 rounded-xl text-xs font-medium cursor-pointer text-foreground hover:bg-amber-50"
-                  >
-                    <Package className="w-4 h-4 text-slate-500" />
-                    <span>{location.pathname.startsWith("/farm") ? "คำสั่งซื้อจากลูกค้า" : "รายการคำสั่งซื้อของฉัน"}</span>
-                  </DropdownMenuItem>
-
-                  <DropdownMenuItem
                     onClick={() => navigate("/profile")}
                     className="flex items-center gap-2 p-2.5 rounded-xl text-xs font-medium cursor-pointer text-foreground hover:bg-amber-50"
                   >
