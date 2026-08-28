@@ -400,10 +400,7 @@ const FarmDashboard = () => {
           </div>
 
           {/* Pending Reservations */}
-          <div
-            onClick={() => navigate("/farm/orders")}
-            className="cursor-pointer group rounded-2xl border border-border/80 bg-card/85 p-5 shadow-sm hover:border-amber-500/50 hover:shadow-md transition-all space-y-2 relative overflow-hidden"
-          >
+          <div className="rounded-2xl border border-border/80 bg-card/85 p-5 shadow-sm space-y-2 relative overflow-hidden">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-muted-foreground">
                 รายการจองรอยืนยัน
@@ -413,7 +410,7 @@ const FarmDashboard = () => {
               </div>
             </div>
             <div className="flex items-baseline gap-2">
-              <span className="text-2xl sm:text-3xl font-black text-foreground group-hover:text-amber-600 transition-colors">
+              <span className="text-2xl sm:text-3xl font-black text-foreground">
                 {stats.pendingReservations}
               </span>
               <span className="text-xs text-muted-foreground">รายการ</span>
@@ -426,10 +423,7 @@ const FarmDashboard = () => {
           </div>
 
           {/* Confirmed / To Ship */}
-          <div
-            onClick={() => navigate("/farm/orders")}
-            className="cursor-pointer group rounded-2xl border border-border/80 bg-card/85 p-5 shadow-sm hover:border-blue-500/50 hover:shadow-md transition-all space-y-2 relative overflow-hidden"
-          >
+          <div className="rounded-2xl border border-border/80 bg-card/85 p-5 shadow-sm space-y-2 relative overflow-hidden">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-muted-foreground">
                 ออเดอร์เตรียมจัดส่ง
@@ -439,7 +433,7 @@ const FarmDashboard = () => {
               </div>
             </div>
             <div className="flex items-baseline gap-2">
-              <span className="text-2xl sm:text-3xl font-black text-foreground group-hover:text-blue-600 transition-colors">
+              <span className="text-2xl sm:text-3xl font-black text-foreground">
                 {stats.confirmedOrders}
               </span>
               <span className="text-xs text-muted-foreground">ออเดอร์</span>
@@ -450,10 +444,7 @@ const FarmDashboard = () => {
           </div>
 
           {/* Active Products */}
-          <div
-            onClick={() => navigate("/farm/products")}
-            className="cursor-pointer group rounded-2xl border border-border/80 bg-card/85 p-5 shadow-sm hover:border-primary/50 hover:shadow-md transition-all space-y-2 relative overflow-hidden"
-          >
+          <div className="rounded-2xl border border-border/80 bg-card/85 p-5 shadow-sm space-y-2 relative overflow-hidden">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-muted-foreground">
                 สินค้าที่เปิดขาย
@@ -463,7 +454,7 @@ const FarmDashboard = () => {
               </div>
             </div>
             <div className="flex items-baseline gap-2">
-              <span className="text-2xl sm:text-3xl font-black text-foreground group-hover:text-primary transition-colors">
+              <span className="text-2xl sm:text-3xl font-black text-foreground">
                 {stats.activeProducts}
               </span>
               <span className="text-xs text-muted-foreground">
