@@ -35,27 +35,11 @@ const Auth = () => {
   });
 
   useEffect(() => {
-    const checkSession = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (session) {
-        navigate("/dashboard", { replace: true });
-      }
-    };
-
-    checkSession();
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session && (event === "SIGNED_IN" || event === "INITIAL_SESSION")) {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
         navigate("/dashboard", { replace: true });
       }
     });
-
-    return () => subscription.unsubscribe();
   }, [navigate]);
 
   /* ---------------- SUBMIT (จุดที่แก้ไข) ---------------- */

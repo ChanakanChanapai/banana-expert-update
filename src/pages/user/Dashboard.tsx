@@ -92,7 +92,7 @@ const Dashboard = () => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
-      if (!session) {
+      if (!session && event === "SIGNED_OUT") {
         navigate("/auth/login", { replace: true });
       }
     });
