@@ -195,17 +195,13 @@ const Navbar = () => {
                 <DropdownMenuTrigger asChild>
                   <button
                     type="button"
-                    className={`group flex items-center gap-2 pl-3.5 pr-2 py-1.5 rounded-full border shadow-sm transition-all duration-200 cursor-pointer active:scale-95 select-none ${
-                      isFarmRole && location.pathname.startsWith("/farm")
-                        ? "bg-amber-400 text-slate-950 border-amber-500/40 hover:bg-amber-500 shadow-amber-200/60"
-                        : "bg-amber-100/90 text-slate-950 border-amber-300 hover:bg-amber-200/90"
-                    }`}
+                    className="group flex items-center gap-2 pl-3.5 pr-2 py-1.5 rounded-full border border-amber-300 bg-amber-100/90 hover:bg-amber-200/90 text-slate-950 shadow-sm transition-all duration-200 cursor-pointer active:scale-95 select-none"
                   >
                     <div className="flex items-center gap-1.5 font-black text-xs">
                       {isFarmRole ? (
                         location.pathname.startsWith("/farm") ? (
                           <>
-                            <Tractor className="w-4 h-4 text-slate-950" />
+                            <Tractor className="w-4 h-4 text-amber-800" />
                             <span>โหมดชาวสวน</span>
                           </>
                         ) : (
@@ -222,17 +218,17 @@ const Navbar = () => {
                       )}
                     </div>
 
-                    <div className="w-5 h-5 rounded-full bg-black/10 flex items-center justify-center group-hover:bg-black/20 transition-colors">
-                      <ChevronDown className="w-3 h-3 text-current transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                    <div className="w-5 h-5 rounded-full bg-amber-200/60 flex items-center justify-center group-hover:bg-amber-300/60 transition-colors">
+                      <ChevronDown className="w-3.5 h-3.5 text-amber-900 transition-transform duration-200 group-data-[state=open]:rotate-180" />
                     </div>
                   </button>
                 </DropdownMenuTrigger>
 
-                <DropdownMenuContent align="end" className="w-64 p-2 rounded-2xl bg-card border shadow-xl animate-in fade-in-50 zoom-in-95">
+                <DropdownMenuContent align="end" className="w-64 p-2 rounded-2xl bg-card border border-amber-200/80 shadow-xl animate-in fade-in-50 zoom-in-95">
                   {/* User Info Header */}
                   <DropdownMenuLabel className="p-2 font-normal">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-9 h-9 rounded-xl bg-amber-400/30 text-amber-800 font-bold flex items-center justify-center text-sm border border-amber-400/40">
+                      <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-800 font-bold flex items-center justify-center text-sm border border-amber-300">
                         {session?.user?.email?.charAt(0).toUpperCase() || "U"}
                       </div>
                       <div className="min-w-0 flex-1">
@@ -258,30 +254,30 @@ const Navbar = () => {
                         onClick={() => navigate("/dashboard")}
                         className={`flex items-center justify-between p-2.5 rounded-xl text-xs font-bold cursor-pointer transition-colors ${
                           !location.pathname.startsWith("/farm")
-                            ? "bg-amber-400 text-slate-950 font-black shadow-xs"
+                            ? "bg-amber-100 border border-amber-300 text-amber-950 font-black shadow-xs"
                             : "text-foreground hover:bg-amber-50"
                         }`}
                       >
                         <div className="flex items-center gap-2">
-                          <User className="w-4 h-4 text-slate-900" />
+                          <User className="w-4 h-4 text-amber-800" />
                           <span>โหมดผู้ซื้อ (User Dashboard)</span>
                         </div>
-                        {!location.pathname.startsWith("/farm") && <Check className="w-3.5 h-3.5 text-slate-950 stroke-[3]" />}
+                        {!location.pathname.startsWith("/farm") && <Check className="w-3.5 h-3.5 text-amber-800 stroke-[3]" />}
                       </DropdownMenuItem>
 
                       <DropdownMenuItem
                         onClick={() => navigate("/farm/dashboard")}
                         className={`flex items-center justify-between p-2.5 rounded-xl text-xs font-bold cursor-pointer transition-colors ${
                           location.pathname.startsWith("/farm")
-                            ? "bg-amber-400 text-slate-950 font-black shadow-xs"
+                            ? "bg-amber-100 border border-amber-300 text-amber-950 font-black shadow-xs"
                             : "text-foreground hover:bg-amber-50"
                         }`}
                       >
                         <div className="flex items-center gap-2">
-                          <Tractor className="w-4 h-4 text-slate-900" />
+                          <Tractor className="w-4 h-4 text-amber-800" />
                           <span>โหมดชาวสวน (Farm Dashboard)</span>
                         </div>
-                        {location.pathname.startsWith("/farm") && <Check className="w-3.5 h-3.5 text-slate-950 stroke-[3]" />}
+                        {location.pathname.startsWith("/farm") && <Check className="w-3.5 h-3.5 text-amber-800 stroke-[3]" />}
                       </DropdownMenuItem>
 
                       <DropdownMenuSeparator className="my-1" />
