@@ -46,6 +46,16 @@ const Auth = () => {
     };
 
     checkSession();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session && (event === "SIGNED_IN" || event === "INITIAL_SESSION")) {
+        navigate("/dashboard", { replace: true });
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, [navigate]);
 
   /* ---------------- SUBMIT (จุดที่แก้ไข) ---------------- */
@@ -79,17 +89,17 @@ const Auth = () => {
           console.error("Auth Error:", error);
           
           if (error.message.includes("Invalid login credentials")) {
-            toast.error("อีเมลหรือรหัสผ่านไม่ถูกต้อง กรุณาเช็คใหม่อีกครั้งน้าบ");
+            toast.error("อีเมลหรือรหัสผ่านไม่ถูกต้อง กรุณาตรวจสอบใหม่อีกครั้ง");
           } else if (error.message.includes("Email not confirmed")) {
-            toast.error("อีเมลนี้ยังไม่ได้ยืนยัน! อย่าลืมเช็คในเมลหรือปิด Confirm Email ใน Supabase นะ");
+            toast.error("อีเมลนี้ยังไม่ได้รับการยืนยัน กรุณาตรวจสอบกล่องข้อความในอีเมลของคุณ");
           } else {
-            toast.error(error.message); // กรณี Error อื่นๆ เช่น Network หรือ Server
+            toast.error(error.message);
           }
           setLoading(false);
           return;
         }
 
-        toast.success("Welcome back!");
+        toast.success("เข้าสู่ระบบเรียบร้อยแล้ว");
         navigate("/dashboard", { replace: true });
 
       } else {
@@ -114,7 +124,7 @@ const Auth = () => {
 
         if (error) {
           if (error.message.includes("User already registered")) {
-            toast.error("อีเมลนี้ถูกใช้ไปแล้วพี่ชาย ลองเปลี่ยนเมลหรือกด Login ดูนะ");
+            toast.error("อีเมลนี้ถูกลงทะเบียนไว้แล้ว สามารถกดเข้าสู่ระบบได้ทันที");
           } else {
             toast.error(error.message);
           }
@@ -122,11 +132,11 @@ const Auth = () => {
           return;
         }
 
-        toast.success("Account created! Please sign in.");
+        toast.success("สมัครสมาชิกสำเร็จเรียบร้อยแล้ว! กรุณาเข้าสู่ระบบ");
         setIsLogin(true);
       }
     } catch (err: any) {
-      toast.error(err.message || "Something went wrong");
+      toast.error(err.message || "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง");
     } finally {
       setLoading(false);
     }
@@ -136,7 +146,7 @@ const Auth = () => {
 
   const handleForgotPassword = async () => {
     if (!formData.email) {
-      toast.error("Please enter your email first");
+      toast.error("กรุณากรอกที่อยู่อีเมลก่อน");
       return;
     }
 
@@ -148,7 +158,7 @@ const Auth = () => {
     );
 
     if (error) toast.error(error.message);
-    else toast.success("Password reset email sent!");
+    else toast.success("ส่งลิงก์รีเซ็ตรหัสผ่านไปยังอีเมลของคุณเรียบร้อยแล้ว");
   };
 
   /* ---------------- UI ---------------- */

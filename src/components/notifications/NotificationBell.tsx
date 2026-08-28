@@ -40,7 +40,40 @@ export const NotificationBell = () => {
 
   useEffect(() => {
     loadUserAndNotifications();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        setUserId(session.user.id);
+        fetchNotifications(session.user.id);
+      } else {
+        setUserId(null);
+        setNotifications([]);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
+
+  const fetchNotifications = async (currentUserId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("notifications")
+        .select("*")
+        .eq("user_id", currentUserId)
+        .order("created_at", { ascending: false })
+        .limit(20);
+
+      if (!error && data) {
+        setNotifications(data as NotificationItem[]);
+      } else {
+        setNotifications([]);
+      }
+    } catch {
+      setNotifications([]);
+    }
+  };
 
   const loadUserAndNotifications = async () => {
     try {
@@ -56,20 +89,7 @@ export const NotificationBell = () => {
       }
 
       setUserId(user.id);
-
-      // ดึงการแจ้งเตือนจริงจากตาราง notifications
-      const { data, error } = await supabase
-        .from("notifications")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false })
-        .limit(20);
-
-      if (!error && data) {
-        setNotifications(data as NotificationItem[]);
-      } else {
-        setNotifications([]);
-      }
+      await fetchNotifications(user.id);
     } catch (err) {
       console.error("Load notifications error:", err);
       setNotifications([]);
