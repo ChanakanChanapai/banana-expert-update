@@ -258,15 +258,15 @@ const Navbar = () => {
                         onClick={() => navigate("/dashboard")}
                         className={`flex items-center justify-between p-2.5 rounded-xl text-xs font-bold cursor-pointer transition-colors ${
                           !location.pathname.startsWith("/farm")
-                            ? "bg-amber-100 text-amber-950 dark:bg-amber-950/60 dark:text-amber-200 font-black"
+                            ? "bg-amber-400 text-slate-950 font-black shadow-xs"
                             : "text-foreground hover:bg-amber-50"
                         }`}
                       >
                         <div className="flex items-center gap-2">
-                          <User className="w-4 h-4 text-amber-600" />
+                          <User className="w-4 h-4 text-slate-900" />
                           <span>โหมดผู้ซื้อ (User Dashboard)</span>
                         </div>
-                        {!location.pathname.startsWith("/farm") && <Check className="w-3.5 h-3.5 text-amber-700" />}
+                        {!location.pathname.startsWith("/farm") && <Check className="w-3.5 h-3.5 text-slate-950 stroke-[3]" />}
                       </DropdownMenuItem>
 
                       <DropdownMenuItem
@@ -278,26 +278,15 @@ const Navbar = () => {
                         }`}
                       >
                         <div className="flex items-center gap-2">
-                          <Tractor className="w-4 h-4 text-amber-800" />
+                          <Tractor className="w-4 h-4 text-slate-900" />
                           <span>โหมดชาวสวน (Farm Dashboard)</span>
                         </div>
-                        {location.pathname.startsWith("/farm") && <Check className="w-3.5 h-3.5 text-slate-950" />}
+                        {location.pathname.startsWith("/farm") && <Check className="w-3.5 h-3.5 text-slate-950 stroke-[3]" />}
                       </DropdownMenuItem>
 
                       <DropdownMenuSeparator className="my-1" />
                     </>
                   )}
-
-                  {/* Common Quick Actions */}
-                  <DropdownMenuItem
-                    onClick={() => navigate("/profile")}
-                    className="flex items-center gap-2 p-2.5 rounded-xl text-xs font-medium cursor-pointer text-foreground hover:bg-amber-50"
-                  >
-                    <Settings className="w-4 h-4 text-slate-500" />
-                    <span>แก้ไขโปรไฟล์ & ที่อยู่</span>
-                  </DropdownMenuItem>
-
-                  <DropdownMenuSeparator className="my-1" />
 
                   {/* Logout Action */}
                   <DropdownMenuItem
