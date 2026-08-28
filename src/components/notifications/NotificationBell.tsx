@@ -57,7 +57,7 @@ export const NotificationBell = () => {
 
       setUserId(user.id);
 
-      // 1. ดึงการแจ้งเตือนจริงจากตาราง notifications
+      // ดึงการแจ้งเตือนจริงจากตาราง notifications
       const { data, error } = await supabase
         .from("notifications")
         .select("*")
@@ -65,72 +65,16 @@ export const NotificationBell = () => {
         .order("created_at", { ascending: false })
         .limit(20);
 
-      if (!error && data && data.length > 0) {
+      if (!error && data) {
         setNotifications(data as NotificationItem[]);
       } else {
-        // หากยังไม่มีข้อมูลใน DB ให้ดึงออเดอร์ล่าสุดเพื่อสร้างการแจ้งเตือนตัวอย่างที่ตรงกับบริบท
-        generateContextualNotifications(user.id);
+        setNotifications([]);
       }
     } catch (err) {
       console.error("Load notifications error:", err);
+      setNotifications([]);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const generateContextualNotifications = async (currentUserId: string) => {
-    try {
-      const { data: reservations } = await supabase
-        .from("reservations")
-        .select("id, status, created_at, products(name)")
-        .eq("user_id", currentUserId)
-        .order("created_at", { ascending: false })
-        .limit(3);
-
-      const items: NotificationItem[] = [];
-
-      if (reservations && reservations.length > 0) {
-        reservations.forEach((r: any) => {
-          const prodName = r.products?.name || "ผลผลิตกล้วย";
-          if (r.status === "confirmed") {
-            items.push({
-              id: `notif-conf-${r.id}`,
-              title: "ฟาร์มยืนยันคำสั่งจองแล้ว",
-              message: `สวนกล้วยได้ยืนยันรายการจอง "${prodName}" ของคุณเรียบร้อยแล้ว กำลังเตรียมผลผลิตตามรอบเก็บเกี่ยว`,
-              type: "confirmed",
-              read: false,
-              created_at: r.created_at || new Date().toISOString(),
-              link: "/dashboard/orders",
-            });
-          } else if (r.status === "pending") {
-            items.push({
-              id: `notif-pend-${r.id}`,
-              title: "ส่งคำขอสั่งจองผลผลิตสำเร็จ",
-              message: `คำสั่งจอง "${prodName}" ถูกส่งไปยังฟาร์มแล้ว รอการยืนยันจากสวน`,
-              type: "pending",
-              read: true,
-              created_at: r.created_at || new Date().toISOString(),
-              link: "/dashboard/orders",
-            });
-          }
-        });
-      }
-
-      // เพิ่มข้อความต้อนรับระบบสั่งจองผลผลิตล่วงหน้า
-      items.push({
-        id: "welcome-system-notif",
-        title: "ยินดีต้อนรับสู่ระบบสั่งจองผลผลิตกล้วยล่วงหน้า",
-        message:
-          "เชื่อมต่อผลผลิตกล้วยสดและหน่อพันธุ์คุณภาพจากสวนเกษตรกรไทยโดยตรง มั่นใจได้ในคุณภาพทุกต้น",
-        type: "system",
-        read: items.length > 0,
-        created_at: new Date().toISOString(),
-        link: "/market",
-      });
-
-      setNotifications(items);
-    } catch {
-      // Fallback
     }
   };
 
