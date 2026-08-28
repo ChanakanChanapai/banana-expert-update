@@ -638,7 +638,7 @@ const Dashboard = () => {
             บริการและเมนูด่วน
           </h3>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className={`grid grid-cols-1 ${role !== "farm" ? "md:grid-cols-3" : "md:grid-cols-2"} gap-4`}>
             {/* Marketplace Card */}
             <div
               onClick={() => navigate("/market")}
@@ -681,33 +681,8 @@ const Dashboard = () => {
               <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
             </div>
 
-            {/* Farm Management Card */}
-            {role === "farm" ? (
-              <div
-                onClick={() => navigate("/farm/dashboard")}
-                className="group relative overflow-hidden rounded-2xl border-2 border-amber-400 bg-amber-500/10 p-5 cursor-pointer hover:border-amber-500 hover:shadow-md hover:bg-amber-500/15 transition-all flex items-center justify-between"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-amber-400 text-slate-950 flex items-center justify-center font-bold group-hover:scale-110 transition-transform shadow-md">
-                    <Store className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-1.5">
-                      <h4 className="font-black text-sm sm:text-base text-slate-950 dark:text-amber-300">
-                        แดชบอร์ดฟาร์มของฉัน
-                      </h4>
-                      <Badge className="text-[10px] h-4 px-1.5 bg-slate-950 text-amber-300 font-bold">
-                        ฟาร์ม
-                      </Badge>
-                    </div>
-                    <p className="text-xs text-muted-foreground font-medium">
-                      จัดการผลผลิตและคำสั่งซื้อลูกค้า
-                    </p>
-                  </div>
-                </div>
-                <ChevronRight className="w-5 h-5 text-amber-600 group-hover:translate-x-1 transition-all" />
-              </div>
-            ) : (
+            {/* Upgrade to Farm Card (Only for non-farm users) */}
+            {role !== "farm" && (
               <div
                 onClick={handleUpgradeToFarm}
                 className="group relative overflow-hidden rounded-2xl border border-amber-500/40 bg-amber-500/5 p-5 cursor-pointer hover:border-amber-500 hover:shadow-md transition-all flex items-center justify-between"
