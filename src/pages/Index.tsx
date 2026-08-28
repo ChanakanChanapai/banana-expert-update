@@ -238,7 +238,7 @@ const Index = () => {
           previewUrl
         );
 
-        toast.success("วิเคราะห์สายพันธุ์กล้วยเรียบร้อย! 🍌");
+        toast.success("วิเคราะห์สายพันธุ์กล้วยเรียบร้อย!");
 
         setTimeout(() => {
           resultRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -264,14 +264,14 @@ const Index = () => {
           <img src={heroImage} alt="Fresh bananas background" className="w-full h-full object-cover" />
         </div>
         <div className="container mx-auto px-4 pt-8 pb-4 md:pt-10 md:pb-5 relative z-10 text-center">
-          <h2 className="text-3xl md:text-5xl font-bold mb-3 leading-tight">
-            AI-Powered Thai Banana{" "}
+          <h2 className="text-3xl md:text-5xl font-black mb-3 leading-tight text-slate-800">
+            ระบบจำแนกสายพันธุ์กล้วย{" "}
             <span className="bg-gradient-primary bg-clip-text text-transparent">
-              Variety Identification
+              ด้วยเทคโนโลยี AI
             </span>
           </h2>
-          <p className="text-base md:text-lg text-muted-foreground mb-4 max-w-2xl mx-auto">
-            ระบบจำแนกสายพันธุ์กล้วย พร้อมระบบจองผลผลิตจากกล้วยเชื่อมต่อโดยตรงกับเกษตกรฟาร์มกล้วยไทย
+          <p className="text-base md:text-lg text-slate-600 mb-4 max-w-2xl mx-auto leading-relaxed">
+            ถ่ายรูปเพื่อจำแนกสายพันธุ์กล้วย พร้อมระบบสั่งจองผลผลิตล่วงหน้าเชื่อมต่อตรงกับพี่น้องเกษตรกรไทย
           </p>
         </div>
       </section>
@@ -285,9 +285,9 @@ const Index = () => {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary"></span>
               </span>
-              <span className="text-xs md:text-sm font-medium">AI-Powered Detection</span>
+              <span className="text-xs md:text-sm font-bold">ระบบวิเคราะห์อัจฉริยะ AI</span>
             </div>
-            <h3 className="text-2xl md:text-3xl font-bold mb-1">ระบบจำแนกสายพันธุ์กล้วย</h3>
+            <h3 className="text-2xl md:text-3xl font-bold mb-1">จำแนกสายพันธุ์กล้วย</h3>
             {previewUrl && (
               <Button
                 variant="ghost"
@@ -317,8 +317,8 @@ const Index = () => {
                 ) : (
                   <div className="py-8">
                     <Upload className="w-12 h-12 mx-auto text-muted-foreground mb-3 group-hover:text-primary transition-colors" />
-                    <p className="text-base md:text-lg font-medium mb-1 text-gray-700">Click to upload image</p>
-                    <p className="text-xs md:text-sm text-muted-foreground">PNG, JPG up to 10MB</p>
+                    <p className="text-base md:text-lg font-bold mb-1 text-gray-800">กดตรงนี้เพื่อเลือกรูปภาพ หรือเปิดกล้องถ่ายภาพ</p>
+                    <p className="text-xs md:text-sm text-slate-500">รองรับไฟล์ภาพ JPG, PNG ขนาดไม่เกิน 10MB</p>
                   </div>
                 )}
               </label>
@@ -478,26 +478,26 @@ const Index = () => {
             <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
               <Cpu className="w-8 h-8 text-primary" />
             </div>
-            <h3 className="text-xl font-bold mb-2">AI Detection</h3>
+            <h3 className="text-xl font-bold mb-2">จำแนกสายพันธุ์ AI</h3>
             <p className="text-muted-foreground">
-              จำแนกสายพันธุ์กล้วยได้ทันที ด้วยเทคโนโลยี Machine Learning
+              จำแนกสายพันธุ์กล้วยได้ทันที ด้วยเทคโนโลยีปัญญาประดิษฐ์ (AI)
             </p>
           </Card>
           <Card className="p-6 text-center hover:shadow-soft transition-shadow">
             <div className="w-16 h-16 bg-secondary/10 rounded-full flex items-center justify-center mx-auto mb-4">
               <Book className="w-8 h-8 text-secondary" />
             </div>
-            <h3 className="text-xl font-bold mb-2">Knowledge Hub</h3>
+            <h3 className="text-xl font-bold mb-2">คลังความรู้กล้วยไทย</h3>
             <p className="text-muted-foreground text-sm">
-              คลังความรู้และสารานุกรมกล้วยไทย ทุกเรื่องโรคพืช สายพันธุ์ และวิธีดูแลรักษา
+              รวบรวมข้อมูลสายพันธุ์ การดูแลรักษา สูตรปุ๋ย และเทคนิคการปลูก
             </p>
           </Card>
           <Card className="p-6 text-center hover:shadow-soft transition-shadow">
             <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-4">
               <Store className="w-8 h-8 text-accent" />
             </div>
-            <h3 className="text-xl font-bold mb-2">Direct from Farms</h3>
-            <p className="text-muted-foreground">จองผลผลิตกล้วยโดยตรงจากฟาร์ม</p>
+            <h3 className="text-xl font-bold mb-2">สั่งจองตรงจากชาวสวน</h3>
+            <p className="text-muted-foreground">สั่งจองผลผลิตกล้วยสดและหน่อพันธุ์คุณภาพส่งตรงถึงบ้าน</p>
           </Card>
         </div>
       </section>
@@ -512,42 +512,43 @@ const Index = () => {
             <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-64 h-64 bg-emerald-200/50 rounded-full blur-3xl" style={{ animation: 'pulse 8s infinite' }}></div>
 
             <div className="relative z-10">
-              <div className="inline-flex items-center gap-2 bg-yellow-100 text-yellow-700 px-4 py-2 rounded-full mb-6 animate-bounce" style={{ animationDuration: '3s' }}>
-                <span className="text-xs font-bold uppercase tracking-wider">Join our community</span>
+              <div className="inline-flex items-center gap-2 bg-amber-100 text-amber-800 px-4 py-2 rounded-full mb-6 shadow-xs">
+                <Sparkles className="w-4 h-4 text-amber-600" />
+                <span className="text-xs font-bold tracking-wider">เครือข่ายเกษตรกรและผู้บริโภคกล้วยไทย</span>
               </div>
 
-              <h3 className="text-4xl md:text-6xl font-black mb-6 tracking-tight text-slate-800 leading-tight">
-                เริ่มต้นการเดินทาง <br />
-                ไปกับ <span className="bg-gradient-to-r from-yellow-500 to-emerald-600 bg-clip-text text-transparent">Banana Expert</span>
+              <h3 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black mb-6 tracking-tight text-slate-800 leading-tight">
+                ยกระดับการทำสวนกล้วยยุคใหม่ <br />
+                ไปกับ <span className="bg-gradient-to-r from-amber-500 via-orange-500 to-emerald-600 bg-clip-text text-transparent">Banana Expert</span>
               </h3>
 
-              <p className="text-lg md:text-xl mb-12 text-slate-600 max-w-2xl mx-auto leading-relaxed">
-                ค้นพบความหลากหลายของกล้วยไทย และเชื่อมต่อตรงกับฟาร์มคุณภาพ <br className="hidden md:block" />
-                เพื่อผลผลิตที่ดีที่สุดจากมือเกษตรกรไทย
+              <p className="text-base sm:text-lg md:text-xl mb-10 text-slate-600 max-w-2xl mx-auto leading-relaxed">
+                ไม่ว่าคุณจะเป็นเกษตรกรผู้ปลูก หรือผู้บริโภคที่มองหาผลผลิตคุณภาพ <br className="hidden md:block" />
+                ร่วมดูแลผลผลิตด้วย AI ศึกษาคลังความรู้ และเชื่อมต่อตลาดตรงจากฟาร์มได้แล้ววันนี้
               </p>
 
-              <div className="flex flex-col sm:flex-row gap-5 justify-center items-center">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                 <Button
                   size="lg"
-                  className="group/btn relative overflow-hidden bg-slate-900 hover:bg-slate-800 text-white px-12 py-8 text-xl rounded-2xl shadow-2xl transition-all hover:scale-105 active:scale-95 w-full sm:w-auto"
+                  className="group/btn relative overflow-hidden bg-slate-900 hover:bg-slate-800 text-white px-8 sm:px-10 py-6 sm:py-7 text-base sm:text-lg rounded-2xl shadow-xl transition-all hover:scale-105 active:scale-95 w-full sm:w-auto"
                   onClick={() => navigate("/market")}
                 >
-                  <span className="relative z-10 flex items-center gap-3">
-                    <Store className="w-6 h-6" />
-                    ตลาดออนไลน์
-                    <ArrowRight className="w-5 h-5 group-hover/btn:translate-x-1 transition-transform" />
+                  <span className="relative z-10 flex items-center justify-center gap-2.5">
+                    <Store className="w-5 h-5" />
+                    สำรวจตลาดผลผลิต
+                    <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
                   </span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-emerald-700 opacity-0 group-hover/btn:opacity-100 transition-opacity"></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-amber-500 to-emerald-600 opacity-0 group-hover/btn:opacity-100 transition-opacity"></div>
                 </Button>
 
                 <Button
                   size="lg"
                   variant="outline"
-                  className="bg-white hover:bg-yellow-50 text-slate-800 border-2 border-yellow-400 hover:border-yellow-500 hover:text-yellow-700 px-12 py-8 text-xl rounded-2xl shadow-lg transition-all hover:scale-105 w-full sm:w-auto"
+                  className="bg-white hover:bg-amber-50 text-slate-800 border-2 border-amber-400 hover:border-amber-500 hover:text-amber-800 px-8 sm:px-10 py-6 sm:py-7 text-base sm:text-lg rounded-2xl shadow-md transition-all hover:scale-105 w-full sm:w-auto"
                   onClick={() => navigate("/knowledge")}
                 >
-                  <Book className="w-6 h-6 mr-3 text-yellow-500 transition-transform group-hover:rotate-12" />
-                  เรียนรู้เพิ่มเติม
+                  <Book className="w-5 h-5 mr-2 text-amber-500 transition-transform group-hover:rotate-6" />
+                  เข้าสู่คลังความรู้
                 </Button>
               </div>
             </div>

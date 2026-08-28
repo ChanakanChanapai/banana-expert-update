@@ -317,7 +317,7 @@ const OrderDetail = () => {
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div className="flex items-center gap-2">
-            <span className="text-3xl">🍌</span>
+            <Package className="w-7 h-7 text-amber-500" />
             <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
               รายละเอียดการจอง
             </h1>
@@ -354,8 +354,8 @@ const OrderDetail = () => {
               <h3 className="font-semibold">ข้อมูลลูกค้า</h3>
             </div>
             <div className="space-y-2">
-              <p><strong>ชื่อผู้รับ:</strong>{" "}{order.receiver_name ?? order.profiles?.full_name ?? "N/A"}</p>
-              <p><strong>เบอร์โทรศัพท์:</strong>{" "}{order.receiver_phone ?? order.profiles?.phone ?? "N/A"}</p>
+              <p><strong>ชื่อผู้รับ:</strong>{" "}{order.receiver_name ?? order.profiles?.full_name ?? "ไม่ระบุ"}</p>
+              <p><strong>เบอร์โทรศัพท์:</strong>{" "}{order.receiver_phone ?? order.profiles?.phone ?? "ไม่ระบุ"}</p>
  
             </div>
           </Card>
@@ -393,7 +393,7 @@ const OrderDetail = () => {
                 />
               )}
               <div className="flex-1">
-                <p className="font-medium">{order.products?.name || "N/A"}</p>
+                <p className="font-medium">{order.products?.name || "ไม่ระบุชื่อสินค้า"}</p>
                 <p className="text-sm text-muted-foreground">
                   ฿{order.products?.price_per_unit}/{order.products?.unit} × {order.quantity}
                 </p>

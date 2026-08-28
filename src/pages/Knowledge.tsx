@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useNavigationType } from "react-router-dom";
 import { Card } from "@/components/ui/card";
-import { Search, Loader2 } from "lucide-react";
+import { Search, Loader2, Leaf } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -91,7 +91,7 @@ const Knowledge = () => {
             คลังความรู้และสารานุกรมกล้วยไทย
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-            คลังความรู้และสารานุกรมกล้วยไทย ทุกเรื่องโรคพืช สายพันธุ์ และวิธีดูแลรักษา
+            คลังความรู้และสารานุกรมกล้วยไทย รวบรวมข้อมูลสายพันธุ์ การดูแลรักษา และเทคนิคการปลูก
           </p>
         </header>
 
@@ -135,13 +135,13 @@ const Knowledge = () => {
                       />
                     ) : (
                       <div className="flex flex-col items-center gap-3">
-                        <span className="text-7xl group-hover:scale-110 transition-transform duration-300">🍌</span>
-                        <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">No Image</span>
+                        <Leaf className="w-16 h-16 text-amber-500/40 group-hover:scale-110 transition-transform duration-300" />
+                        <span className="text-xs font-bold text-muted-foreground tracking-wider">ไม่มีรูปภาพ</span>
                       </div>
                     )}
                     {/* Overlay ตอน Hover */}
                     <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                       <div className="bg-white/90 text-black px-4 py-2 rounded-full font-bold text-sm shadow-sm">อ่านเพิ่มเติม</div>
+                       <div className="bg-white/90 text-black px-4 py-2 rounded-full font-bold text-sm shadow-sm">คลิกดูข้อมูลสายพันธุ์</div>
                     </div>
                   </div>
 

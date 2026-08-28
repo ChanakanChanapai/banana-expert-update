@@ -314,7 +314,7 @@ const FarmDashboard = () => {
                     {farm?.farm_name || "ฟาร์มกล้วยคุณภาพ"}
                   </h1>
                   <Badge className="rounded-full text-xs font-semibold px-2.5 py-0.5 bg-primary text-primary-foreground">
-                    🌾 บัญชีฟาร์มเกษตรกร
+                    บัญชีฟาร์มเกษตรกร
                   </Badge>
                 </div>
 
@@ -721,7 +721,7 @@ const FarmDashboard = () => {
                                 : "bg-slate-950/85 text-emerald-300 border-slate-800 backdrop-blur-sm"
                             }`}
                           >
-                            {isFruit ? "🍌 กล้วยผลสด" : "🌱 หน่อพันธุ์"}
+                            {isFruit ? "กล้วยผลสด" : "หน่อพันธุ์"}
                           </Badge>
                         </div>
 

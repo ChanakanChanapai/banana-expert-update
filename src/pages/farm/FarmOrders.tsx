@@ -23,6 +23,7 @@ import {
   X,
   Truck,
   Printer,
+  Package,
 } from "lucide-react";
 import {
   AlertDialog,
@@ -451,7 +452,8 @@ loadData(); // ✅ ใช้อันนี้
             {/* ---------- ส่งวันนี้ ---------- */}
             <div>
               <h2 className="font-semibold text-lg mb-2 flex items-center gap-2">
-                <span>🚚 ต้องจัดส่งวันนี้</span>
+                <Truck className="w-5 h-5 text-emerald-600" />
+                <span>ต้องจัดส่งวันนี้</span>
                 <span className="text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold">
                   {todayShipping.length} รายการ
                 </span>
@@ -475,7 +477,10 @@ loadData(); // ✅ ใช้อันนี้
 
             {/* ---------- ออเดอร์อื่น ---------- */}
             <div>
-              <h2 className="font-semibold text-lg mb-2">📦 ออเดอร์ที่รอจัดส่ง</h2>
+              <h2 className="font-semibold text-lg mb-2 flex items-center gap-2">
+                <Package className="w-5 h-5 text-amber-600" />
+                <span>ออเดอร์ที่รอจัดส่ง</span>
+              </h2>
 
               <OrderTable
                 data={filterData(otherConfirmed)}

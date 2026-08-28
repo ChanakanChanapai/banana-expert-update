@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Search, Star, MapPin, X } from "lucide-react"; 
+import { Search, Star, MapPin, X, Package, PackageOpen, ShoppingBag } from "lucide-react"; 
 import { toast } from "sonner";
 import Navbar from "@/components/layout/Navbar";
 import {
@@ -256,8 +256,8 @@ const Market = () => {
             </SelectTrigger>
             <SelectContent className="rounded-xl border-none shadow-xl">
               <SelectItem value="all">ทั้งหมด</SelectItem>
-              <SelectItem value="fruit">🍌 กล้วย (ผล)</SelectItem>
-              <SelectItem value="shoot">🌱 หน่อกล้วย</SelectItem>
+              <SelectItem value="fruit">กล้วย (ผลสด)</SelectItem>
+              <SelectItem value="shoot">หน่อพันธุ์กล้วย</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -269,10 +269,10 @@ const Market = () => {
             <p className="text-muted-foreground font-medium italic">กำลังค้นหาผลผลิตคุณภาพให้คุณ...</p>
           </div>
         ) : filteredProducts.length === 0 ? (
-          <div className="text-center py-24 bg-white rounded-[2rem] shadow-sm border-2 border-dashed border-slate-100 max-w-5xl mx-auto">
-            <div className="text-7xl mb-6">📦</div>
+          <div className="text-center py-24 bg-white rounded-[2rem] shadow-sm border-2 border-dashed border-slate-100 max-w-5xl mx-auto flex flex-col items-center justify-center">
+            <PackageOpen className="w-16 h-16 text-slate-300 mb-4" />
             <h3 className="text-2xl font-bold text-gray-700">ไม่พบสินค้าในขณะนี้</h3>
-            <p className="text-muted-foreground mt-2">ลองเปลี่ยนคำค้นหา หรือเลือกดูประเภทอื่นนะจ๊ะ</p>
+            <p className="text-muted-foreground mt-2">ลองเปลี่ยนคำค้นหา หรือเลือกดูประเภทอื่น</p>
             <button 
               onClick={() => {setSearch(""); setTypeFilter("all");}}
               className="mt-6 text-primary font-bold hover:underline"
@@ -307,7 +307,9 @@ const Market = () => {
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-6xl">🍌</div>
+                      <div className="w-full h-full flex items-center justify-center bg-amber-50/50">
+                        <ShoppingBag className="w-14 h-14 text-amber-300" />
+                      </div>
                     )}
                     
                     {/* Product Type Label */}
@@ -384,8 +386,8 @@ const Market = () => {
       </div>
 
       <footer className="container mx-auto px-4 py-16 text-center text-muted-foreground text-sm border-t border-slate-100 mt-20">
-        <div className="mb-4 text-primary font-black tracking-tighter text-xl">BANANA EXPERT</div>
-        <p className="font-medium">© 2026 Banana Expert Thailand. All Rights Reserved.</p>
+        <div className="mb-4 text-primary font-black tracking-tight text-xl">Banana Expert - ตลาดผลผลิตกล้วยไทย</div>
+        <p className="font-medium">© 2026 Banana Expert แพลตฟอร์มเพื่อเกษตรกรกล้วยไทย สงวนลิขสิทธิ์</p>
         <p className="mt-1 opacity-60 italic">"สนับสนุนเกษตรกรไทย เพื่อผลผลิตที่ยั่งยืน"</p>
       </footer>
     </div>

@@ -24,6 +24,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -150,7 +151,7 @@ const Navbar = () => {
 
         {/* 🧭 Desktop & Tablet Navigation Menu */}
         <div className="hidden lg:flex items-center gap-2">
-          {/* 1. AI Detection */}
+          {/* 1. จำแนกสายพันธุ์ AI */}
           <button
             onClick={() => {
               if (location.pathname === "/") {
@@ -160,33 +161,38 @@ const Navbar = () => {
               }
             }}
             className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-bold text-slate-900 transition-all hover:bg-amber-100 active:scale-95"
-            title="ระบบจำแนกสายพันธุ์กล้วยด้วย AI"
+            title="ระบบสแกนและตรวจวิเคราะห์สายพันธุ์กล้วยด้วย AI"
           >
             <ScanLine className="w-4 h-4 text-amber-500" />
-            AI Detection
+            จำแนกสายพันธุ์ AI
           </button>
 
-          {/* 2. Knowledge Hub */}
+          {/* 2. คลังความรู้กล้วย */}
           <NavLink 
             to="/knowledge" 
             className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-bold text-slate-900 transition-all hover:bg-amber-100 active:scale-95"
             activeClassName="bg-amber-400 text-slate-950 shadow-sm" 
-            title="คลังความรู้และสารานุกรมกล้วยไทย ทุกเรื่องโรคพืช สายพันธุ์ และวิธีดูแลรักษา"
+            title="คลังความรู้และสารานุกรมกล้วยไทย สายพันธุ์ และการดูแลรักษา"
           >
             <BookOpen className="w-4 h-4 text-emerald-600" />
-            Knowledge Hub
+            คลังความรู้กล้วย
           </NavLink>
 
-          {/* 3. Smart Marketplace */}
+          {/* 3. ตลาดผลผลิตจากฟาร์ม */}
           <NavLink 
             to="/market" 
             className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-bold text-slate-900 transition-all hover:bg-amber-100 active:scale-95"
             activeClassName="bg-amber-400 text-slate-950 shadow-sm"
-            title="ตลาดซื้อขายและสั่งจองผลผลิตกล้วยสด หน่อพันธุ์จากฟาร์มโดยตรง"
+            title="ตลาดสั่งจองผลผลิตกล้วยสดและหน่อพันธุ์จากสวนโดยตรง"
           >
             <Store className="w-4 h-4 text-blue-600" />
-            Smart Marketplace
+            ตลาดผลผลิตจากฟาร์ม
           </NavLink>
+
+          {/* Notification Bell (Always accessible) */}
+          <div className="flex items-center ml-1">
+            <NotificationBell />
+          </div>
 
           {session ? (
             <div className="flex items-center gap-2 border-l border-amber-200/80 pl-3 ml-2">
@@ -236,7 +242,7 @@ const Navbar = () => {
                           {session?.user?.user_metadata?.full_name || session?.user?.email?.split("@")[0] || "ผู้ใช้งาน"}
                         </p>
                         <span className="inline-flex items-center text-[10px] font-semibold text-amber-700 dark:text-amber-400">
-                          {isFarmRole ? "🌾 บัญชีฟาร์มเกษตรกร" : "🍌 สมาชิกทั่วไป"}
+                          {isFarmRole ? "บัญชีฟาร์มเกษตรกร" : "สมาชิกทั่วไป"}
                         </span>
                       </div>
                     </div>
@@ -316,8 +322,11 @@ const Navbar = () => {
           )}
         </div>
 
-        {/* 📱 Mobile & Tablet Hamburger Toggle */}
-        <div className="flex lg:hidden items-center gap-2">
+        {/* 📱 Mobile & Tablet Header Buttons */}
+        <div className="flex lg:hidden items-center gap-1.5">
+          {/* Notification Bell on Mobile */}
+          <NotificationBell />
+
           {session ? (
             <button
               onClick={() => setMobileMenuOpen(true)}
@@ -345,7 +354,7 @@ const Navbar = () => {
               onClick={() => navigate("/auth/login")}
               className="bg-amber-400 hover:bg-amber-500 text-slate-950 font-bold rounded-xl text-xs px-3 h-8 shadow-sm border border-amber-500/30"
             >
-              Sign In
+              เข้าสู่ระบบ
             </Button>
           )}
 
@@ -397,7 +406,7 @@ const Navbar = () => {
               </button>
             </div>
           )}
-          {/* 1. AI Detection */}
+          {/* 1. จำแนกสายพันธุ์ AI */}
           <button
             onClick={() => {
               setMobileMenuOpen(false);
@@ -412,10 +421,10 @@ const Navbar = () => {
             <div className="w-8 h-8 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center">
               <ScanLine className="w-4 h-4" />
             </div>
-            <span>AI Detection (สแกนสายพันธุ์)</span>
+            <span>จำแนกสายพันธุ์ AI</span>
           </button>
 
-          {/* 2. Knowledge Hub */}
+          {/* 2. คลังความรู้กล้วย */}
           <NavLink 
             to="/knowledge" 
             onClick={() => setMobileMenuOpen(false)}
@@ -425,10 +434,10 @@ const Navbar = () => {
             <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center">
               <BookOpen className="w-4 h-4" />
             </div>
-            <span>Knowledge Hub (คลังความรู้)</span>
+            <span>คลังความรู้กล้วยไทย</span>
           </NavLink>
 
-          {/* 3. Smart Marketplace */}
+          {/* 3. ตลาดผลผลิตจากฟาร์ม */}
           <NavLink 
             to="/market" 
             onClick={() => setMobileMenuOpen(false)}
@@ -438,7 +447,7 @@ const Navbar = () => {
             <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center">
               <Store className="w-4 h-4" />
             </div>
-            <span>Smart Marketplace (ตลาดซื้อขาย)</span>
+            <span>ตลาดผลผลิตจากฟาร์ม</span>
           </NavLink>
 
           {session && (
@@ -453,7 +462,7 @@ const Navbar = () => {
                 className="w-full text-slate-600 hover:text-destructive hover:bg-destructive/10 rounded-xl justify-center font-bold text-xs"
               >
                 <LogOut className="w-4 h-4 mr-2" />
-                ออกจากระบบ (Sign Out)
+                ออกจากระบบ
               </Button>
             </div>
           )}

@@ -295,7 +295,7 @@ const Dashboard = () => {
         return;
       }
 
-      toast.success("ยินดีต้อนรับ! อัปเกรดเป็นบัญชีฟาร์มเรียบร้อยแล้ว 🌾");
+      toast.success("ยินดีต้อนรับ! อัปเกรดเป็นบัญชีฟาร์มเรียบร้อยแล้ว");
       navigate("/farm/dashboard");
     } catch {
       toast.error("การอัปเกรดล้มเหลว");
@@ -409,7 +409,7 @@ const Dashboard = () => {
                     variant={role === "farm" ? "default" : "secondary"}
                     className="rounded-full text-xs font-semibold px-2.5 py-0.5"
                   >
-                    {role === "farm" ? "🌾 เกษตรกร / เจ้าของฟาร์ม" : "🍌 สมาชิกทั่วไป"}
+                    {role === "farm" ? "เกษตรกร / เจ้าของฟาร์ม" : "สมาชิกทั่วไป"}
                   </Badge>
                 </div>
                 <p className="text-xs sm:text-sm text-muted-foreground flex items-center gap-1.5">
@@ -516,7 +516,7 @@ const Dashboard = () => {
                   รอยืนยัน
                 </p>
                 <p className="text-[11px] text-muted-foreground">
-                  รอฟาร์มตรวจสอบยอด
+                  รอฟาร์มยืนยันการจอง
                 </p>
               </div>
             </div>
@@ -609,7 +609,7 @@ const Dashboard = () => {
             >
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-600 flex items-center justify-center font-bold text-xl group-hover:scale-110 transition-transform">
-                  🍌
+                  <ShoppingBag className="w-6 h-6" />
                 </div>
                 <div>
                   <h4 className="font-bold text-sm sm:text-base text-foreground group-hover:text-primary transition-colors">
@@ -634,10 +634,10 @@ const Dashboard = () => {
                 </div>
                 <div>
                   <h4 className="font-bold text-sm sm:text-base text-foreground group-hover:text-primary transition-colors">
-                    Knowledge Hub (คลังความรู้)
+                    คลังความรู้กล้วยไทย
                   </h4>
                   <p className="text-xs text-muted-foreground">
-                    คลังความรู้และสารานุกรมกล้วยไทย ทุกเรื่องโรคพืช สายพันธุ์ และวิธีดูแลรักษา
+                    รวบรวมข้อมูลสารานุกรมสายพันธุ์กล้วย การดูแลรักษา และเทคนิคการปลูก
                   </p>
                 </div>
               </div>

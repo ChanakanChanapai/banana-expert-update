@@ -523,7 +523,7 @@ const UserOrders = () => {
 
       if (error) throw error;
 
-      toast.success("ขอบคุณสำหรับคะแนนและรีวิวสินค้า 🌟");
+      toast.success("ขอบคุณสำหรับคะแนนและรีวิวสินค้า");
       setOpenReview(false);
       setSelectedOrder(null);
       setRating(5);
@@ -656,7 +656,7 @@ const UserOrders = () => {
                   : "bg-slate-950/85 text-emerald-300 border-slate-800 backdrop-blur-sm"
               }`}
             >
-              {isFruit ? "🍌 ผลสด" : "🌱 หน่อพันธุ์"}
+              {isFruit ? "ผลสด" : "หน่อพันธุ์"}
             </Badge>
           </div>
 
@@ -668,7 +668,7 @@ const UserOrders = () => {
 
             <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
               <span className="px-2 py-0.5 rounded bg-muted font-medium">
-                ประเภท: {isFruit ? "🍌 กล้วยผลสด" : "🌱 หน่อพันธุ์/กล้า"}
+                ประเภท: {isFruit ? "กล้วยผลสด" : "หน่อพันธุ์/กล้า"}
               </span>
               <span>•</span>
               <span>จำนวน: <strong className="text-foreground">{quantity}</strong> {product?.unit || "ชิ้น"}</span>

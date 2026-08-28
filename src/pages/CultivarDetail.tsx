@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
   ArrowLeft, BookOpen, Droplets, Lightbulb, Info, 
-  Sprout, Scissors, Sun, Scaling, Bug, Timer, Heart, Star, Store
+  Sprout, Scissors, Sun, Scaling, Bug, Timer, Heart, Star, Store, Leaf
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -69,7 +69,7 @@ const CultivarDetail = () => {
     return (
       <div className="min-h-screen bg-gradient-hero flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-bounce text-5xl mb-4">🍌</div>
+          <Leaf className="w-14 h-14 text-amber-500 mb-4 animate-bounce mx-auto" />
           <p className="text-primary font-medium italic">กำลังรวบรวมข้อมูลสายพันธุ์...</p>
         </div>
       </div>
@@ -104,14 +104,14 @@ const CultivarDetail = () => {
                   onError={(e) => {
                     (e.target as HTMLImageElement).parentElement!.innerHTML = `
                       <div class="w-full h-full bg-gradient-primary flex items-center justify-center">
-                        <span class="text-8xl drop-shadow-xl select-none">🍌</span>
+                        <svg class="w-24 h-24 text-amber-900/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>
                       </div>
                     `;
                   }}
                 />
               ) : (
                 <div className="w-full h-full bg-gradient-primary flex items-center justify-center">
-                  <span className="text-9xl drop-shadow-xl select-none">🍌</span>
+                  <Leaf className="w-24 h-24 text-amber-900/30" />
                 </div>
               )}
               

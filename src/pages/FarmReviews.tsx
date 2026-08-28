@@ -194,7 +194,7 @@ const FarmReviews = () => {
                 {/* Footer */}
                 <div className="text-xs text-muted-foreground flex justify-between">
                   <span>
-                    {r.profiles?.full_name ?? "Anonymous"}
+                    {r.profiles?.full_name ?? "ผู้ใช้งานทั่วไป"}
                   </span>
 
                   <span>{formatDate(r.created_at)}</span>

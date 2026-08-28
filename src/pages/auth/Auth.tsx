@@ -155,50 +155,56 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-hero p-4">
-      <Card className="w-full max-w-md p-8">
-        <h1 className="text-2xl font-bold text-center mb-6">
-          {isLogin ? "Sign In" : "Create Account"}
+      <Card className="w-full max-w-md p-8 shadow-xl rounded-3xl border-none bg-white/95">
+        <h1 className="text-2xl font-black text-center mb-6 text-slate-800">
+          {isLogin ? "เข้าสู่ระบบ Banana Expert" : "สมัครสมาชิกใหม่"}
         </h1>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {!isLogin && (
             <div>
-              <Label>Full Name</Label>
+              <Label className="text-slate-700 font-semibold mb-1 block">ชื่อ - นามสกุล</Label>
               <Input
+                placeholder="ระบุชื่อและนามสกุลของคุณ"
                 value={formData.fullName}
                 onChange={(e) =>
                   setFormData({ ...formData, fullName: e.target.value })
                 }
+                className="rounded-xl h-11"
               />
             </div>
           )}
 
           <div>
-            <Label>Email</Label>
+            <Label className="text-slate-700 font-semibold mb-1 block">ที่อยู่อีเมล</Label>
             <Input
               type="email"
+              placeholder="example@email.com"
               value={formData.email}
               onChange={(e) =>
                 setFormData({ ...formData, email: e.target.value })
               }
               required
+              className="rounded-xl h-11"
             />
           </div>
 
           <div>
-            <Label>Password</Label>
+            <Label className="text-slate-700 font-semibold mb-1 block">รหัสผ่าน</Label>
             <Input
               type="password"
+              placeholder="กรอกรหัสผ่านของคุณ"
               value={formData.password}
               onChange={(e) =>
                 setFormData({ ...formData, password: e.target.value })
               }
               required
+              className="rounded-xl h-11"
             />
           </div>
 
-          <Button className="w-full" disabled={loading}>
-            {loading ? "Please wait..." : isLogin ? "Sign In" : "Sign Up"}
+          <Button className="w-full h-12 rounded-xl text-base font-bold bg-amber-500 hover:bg-amber-600 text-slate-950 shadow-md" disabled={loading}>
+            {loading ? "กำลังดำเนินการ..." : isLogin ? "เข้าสู่ระบบ" : "ยืนยันการสมัครสมาชิก"}
           </Button>
 
           {isLogin && (
@@ -206,9 +212,9 @@ const Auth = () => {
               <button
                 type="button"
                 onClick={handleForgotPassword}
-                className="text-sm text-primary hover:underline"
+                className="text-sm font-medium text-amber-700 hover:underline"
               >
-                ลืมรหัสผ่าน?
+                ลืมรหัสผ่านใช่หรือไม่?
               </button>
             </div>
           )}
@@ -217,11 +223,11 @@ const Auth = () => {
         <div className="mt-6 text-center">
           <button
             onClick={() => setIsLogin(!isLogin)}
-            className="text-sm text-primary hover:underline"
+            className="text-sm font-medium text-slate-600 hover:text-amber-800 hover:underline"
           >
             {isLogin
-              ? "Don't have an account? Sign up"
-              : "Already have an account? Sign in"}
+              ? "ยังไม่มีบัญชีผู้ใช้งาน? กดเพื่อสมัครสมาชิก"
+              : "มีบัญชีผู้ใช้งานอยู่แล้ว? กดเพื่อเข้าสู่ระบบ"}
           </button>
         </div>
       </Card>

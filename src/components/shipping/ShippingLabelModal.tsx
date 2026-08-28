@@ -270,7 +270,7 @@ ${data.farm_location}
                     <User className="w-3.5 h-3.5 text-white" />
                   </div>
                   <span className="text-xs font-bold uppercase tracking-wide text-emerald-700 dark:text-emerald-400">
-                    📍 ผู้รับสินค้า (TO)
+                    ผู้รับสินค้า (TO)
                   </span>
                 </div>
                 <p className="font-black text-base text-gray-900 dark:text-white">
@@ -310,7 +310,7 @@ ${data.farm_location}
                     <Store className="w-3.5 h-3.5 text-white" />
                   </div>
                   <span className="text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400">
-                    📦 ผู้ส่ง (FROM)
+                    ผู้ส่ง (FROM)
                   </span>
                 </div>
                 <p className="font-bold text-sm text-gray-900 dark:text-white">
@@ -465,7 +465,7 @@ ${data.farm_location}
                   <div className="border-b-2 border-black py-2.5 bg-slate-50/90 -mx-1 px-2 rounded-sm my-1">
                     <div className="flex justify-between items-center text-xs font-bold text-black mb-1">
                       <span className="bg-black text-white px-1.5 py-0.5 rounded text-[11px]">
-                        📍 ผู้รับ (TO / RECIPIENT)
+                        ผู้รับ (TO / RECIPIENT)
                       </span>
                       <span className="text-[11px] font-bold text-emerald-800">ปลายทาง</span>
                     </div>
@@ -477,7 +477,7 @@ ${data.farm_location}
                     </p>
                     <div className="mt-2 flex flex-wrap justify-between items-center gap-2">
                       <div className="inline-flex items-center gap-1 bg-yellow-200 border border-yellow-400 px-2 py-0.5 rounded text-xs font-bold text-black">
-                        <span>📞 โทร:</span>
+                        <span>โทร:</span>
                         <span className="text-sm font-black">{data.receiver_phone || "-"}</span>
                       </div>
                       <div className="flex items-center gap-1">
@@ -500,7 +500,7 @@ ${data.farm_location}
                   <div className="py-1.5 text-xs border-b border-gray-400">
                     <div className="flex justify-between items-center font-bold text-[11px]">
                       <span className="truncate max-w-[70%]">
-                        📦 สินค้า: <span className="font-semibold">{data.product_name}</span>
+                        สินค้า: <span className="font-semibold">{data.product_name}</span>
                       </span>
                       <span className="bg-gray-200 px-1.5 py-0.5 rounded text-[11px]">
                         จำนวน: <strong>{data.quantity}</strong> หน่วย
@@ -515,7 +515,7 @@ ${data.farm_location}
 
                   {/* 5. ป้ายเตือน */}
                   <div className="my-1 py-1 px-2 border-2 border-red-600 bg-red-50 text-red-700 rounded-sm flex items-center justify-between text-[10px] font-bold">
-                    <span>⚠️ ผลไม้สด ห้ามโยน ระวังกระแทก</span>
+                    <span>ผลไม้สด ห้ามโยน ระวังกระแทก</span>
                     <span className="uppercase text-[9px] tracking-wider font-black">
                       FRAGILE / DO NOT DROP
                     </span>

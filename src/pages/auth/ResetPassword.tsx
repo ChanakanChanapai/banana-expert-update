@@ -59,46 +59,48 @@ const ResetPassword = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-hero p-4">
-      <Card className="w-full max-w-md p-8">
-        <h1 className="text-2xl font-bold text-center mb-2">Reset Password</h1>
-        <p className="text-sm text-gray-500 text-center mb-6">
-            ตั้งรหัสผ่านใหม่ให้กล้วยของคุณน้าบ 🍌
+      <Card className="w-full max-w-md p-8 shadow-xl rounded-3xl border-none bg-white/95">
+        <h1 className="text-2xl font-black text-center mb-2 text-slate-800">ตั้งรหัสผ่านใหม่</h1>
+        <p className="text-sm text-slate-500 text-center mb-6">
+          กรุณากำหนดรหัสผ่านใหม่สำหรับเข้าใช้งานบัญชีของคุณ
         </p>
 
         <form onSubmit={handleReset} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="password">New Password</Label>
+            <Label htmlFor="password" className="font-semibold text-slate-700">รหัสผ่านใหม่</Label>
             <Input
               id="password"
               type="password"
-              placeholder="••••••••"
+              placeholder="กรอกรหัสผ่านใหม่อย่างน้อย 6 ตัวอักษร"
               value={formData.password}
               onChange={(e) =>
                 setFormData({ ...formData, password: e.target.value })
               }
               required
+              className="rounded-xl h-11"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Confirm New Password</Label>
+            <Label htmlFor="confirmPassword" className="font-semibold text-slate-700">ยืนยันรหัสผ่านใหม่อีกครั้ง</Label>
             <Input
               id="confirmPassword"
               type="password"
-              placeholder="••••••••"
+              placeholder="พิมพ์รหัสผ่านใหม่อีกครั้งให้ตรงกัน"
               value={formData.confirmPassword}
               onChange={(e) =>
                 setFormData({ ...formData, confirmPassword: e.target.value })
               }
               required
+              className="rounded-xl h-11"
             />
           </div>
 
           <Button 
-            className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-semibold" 
+            className="w-full h-12 rounded-xl text-base font-bold bg-amber-500 hover:bg-amber-600 text-slate-950 shadow-md" 
             disabled={loading}
           >
-            {loading ? "Updating..." : "Update Password"}
+            {loading ? "กำลังบันทึกข้อมูล..." : "บันทึกรหัสผ่านใหม่"}
           </Button>
         </form>
       </Card>

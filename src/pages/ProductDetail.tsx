@@ -19,7 +19,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 
 import { toast } from "sonner";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, ShoppingBag } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import ThaiAddressSelector from "@/components/address/ThaiAddressSelector";
 
@@ -265,7 +265,7 @@ const ProductDetail = () => {
                 className="w-full h-full object-cover"
               />
             ) : (
-              <span className="text-7xl">🍌</span>
+              <ShoppingBag className="w-20 h-20 text-slate-300" />
             )}
           </div>
 
@@ -284,8 +284,14 @@ const ProductDetail = () => {
                 คงเหลือ: {product.available_quantity} {product.unit}
               </div>
               <div>
-                วันที่เก็บเกี่ยว:{" "}
-                {new Date(product.harvest_date).toLocaleDateString()}
+                รอบวันเก็บเกี่ยว:{" "}
+                <span className="font-semibold text-slate-800">
+                  {new Date(product.harvest_date).toLocaleDateString("th-TH", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
+                </span>
               </div>
             </Card>
 

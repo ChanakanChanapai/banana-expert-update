@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Star, Loader2, MapPin } from "lucide-react";
+import { ArrowLeft, Star, Loader2, MapPin, Package } from "lucide-react";
 
 /* ---------- Types ---------- */
 interface FarmProfile {
@@ -190,7 +190,9 @@ const FarmPublic = () => {
                       alt={p.name}
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-5xl bg-slate-50">🍌</div>
+                    <div className="w-full h-full flex items-center justify-center bg-slate-50">
+                      <Package className="w-12 h-12 text-slate-300" />
+                    </div>
                   )}
                   <div className="absolute top-2 right-2">
                     <span className="text-[10px] px-2 py-1 rounded-md bg-white/90 font-bold shadow-sm">
