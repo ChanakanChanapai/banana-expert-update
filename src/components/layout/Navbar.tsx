@@ -298,6 +298,17 @@ const Navbar = () => {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
+
+              {/* 🚪 ปุ่มออกจากระบบข้างๆ แคปซูลโหมด */}
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => setShowLogoutConfirm(true)} 
+                title="ออกจากระบบ"
+                className="rounded-xl text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition-all duration-200 h-8 w-8"
+              >
+                <LogOut className="w-4 h-4" />
+              </Button>
             </div>
           ) : (
             <Button 

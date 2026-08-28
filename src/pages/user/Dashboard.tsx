@@ -434,43 +434,6 @@ const Dashboard = () => {
                 <User className="w-4 h-4 text-primary" />
                 แก้ไขโปรไฟล์ & ที่อยู่
               </Button>
-
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="rounded-xl text-destructive hover:bg-destructive/10 hover:text-destructive gap-1.5"
-                  >
-                    <LogOut className="w-4 h-4" />
-                    ออกจากระบบ
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent className="rounded-2xl max-w-md p-6 bg-card border shadow-2xl">
-                  <AlertDialogHeader>
-                    <div className="w-12 h-12 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center mb-2 mx-auto sm:mx-0">
-                      <LogOut className="w-6 h-6" />
-                    </div>
-                    <AlertDialogTitle className="text-lg font-bold text-foreground">
-                      ยืนยันการออกจากระบบ
-                    </AlertDialogTitle>
-                    <AlertDialogDescription className="text-sm text-muted-foreground">
-                      คุณต้องการออกจากระบบ Banana Expert ใช่หรือไม่?
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter className="mt-4 gap-2 sm:gap-0">
-                    <AlertDialogCancel className="rounded-xl font-medium">
-                      ยกเลิก
-                    </AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={handleLogout}
-                      className="bg-destructive hover:bg-destructive/90 text-white rounded-xl font-bold"
-                    >
-                      ออกจากระบบ
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
             </div>
           </div>
 
