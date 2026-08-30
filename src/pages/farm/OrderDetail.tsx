@@ -228,6 +228,7 @@ const OrderDetail = () => {
                 read: false,
                 link: "/dashboard/orders",
               });
+              window.dispatchEvent(new CustomEvent("refresh-notifications"));
             } catch (e) {
               console.error("Notify buyer error:", e);
             }
@@ -254,6 +255,7 @@ const OrderDetail = () => {
               read: false,
               link: "/dashboard/orders",
             });
+            window.dispatchEvent(new CustomEvent("refresh-notifications"));
           } catch (e) {
             console.error("Notify buyer error:", e);
           }
@@ -283,6 +285,7 @@ const OrderDetail = () => {
               read: false,
               link: "/dashboard/orders",
             });
+            window.dispatchEvent(new CustomEvent("refresh-notifications"));
           } catch (e) {
             console.error("Notify buyer error:", e);
           }

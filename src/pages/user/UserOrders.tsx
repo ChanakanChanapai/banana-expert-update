@@ -491,6 +491,7 @@ const UserOrders = () => {
               read: false,
               link: "/farm/orders",
             });
+            window.dispatchEvent(new CustomEvent("refresh-notifications"));
           }
         } catch (e) {
           console.error("Notify farm of receipt error:", e);
@@ -568,6 +569,7 @@ const UserOrders = () => {
               read: false,
               link: `/farm/reviews/${selectedOrder.farm_id}`,
             });
+            window.dispatchEvent(new CustomEvent("refresh-notifications"));
           }
         } catch (e) {
           console.error("Notify farm of review error:", e);

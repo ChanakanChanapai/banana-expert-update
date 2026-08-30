@@ -56,10 +56,11 @@ export const NotificationBell = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // 🔔 Real-time Listener: ดักจับแจ้งเตือนใหม่ทันทีเมื่อมีการ Insert ลงตาราง notifications
+  // 🔔 Real-time Listener & Event-based Sync: ดักจับแจ้งเตือนใหม่ทันที
   useEffect(() => {
     if (!userId) return;
 
+    // 1. Supabase Realtime Channel
     const channel = supabase
       .channel(`realtime-notifications-${userId}`)
       .on(
@@ -77,7 +78,7 @@ export const NotificationBell = () => {
             return [newNotif, ...prev];
           });
 
-          // เด้ง Toast แจ้งเตือนแบบทันท่วงทีบนหน้าจอ (ทั้ง Mobile & Desktop)
+          // เด้ง Toast แจ้งเตือนแบบทันท่วงทีบนหน้าจอ
           toast.info(newNotif.title, {
             description: newNotif.message,
             duration: 6000,
@@ -92,8 +93,23 @@ export const NotificationBell = () => {
       )
       .subscribe();
 
+    // 2. Custom Event Listener สำหรับการ Trigger ภายในหน้าเว็บเดียวกัน (0ms latency)
+    const handleSync = () => {
+      fetchNotifications(userId);
+    };
+    window.addEventListener("refresh-notifications", handleSync);
+    window.addEventListener("focus", handleSync);
+
+    // 3. Polling สำรองทุก 15 วินาที เพื่อให้แน่ใจว่าได้ข้อมูลสดใหม่เสมอ
+    const pollInterval = setInterval(() => {
+      fetchNotifications(userId);
+    }, 15000);
+
     return () => {
       supabase.removeChannel(channel);
+      window.removeEventListener("refresh-notifications", handleSync);
+      window.removeEventListener("focus", handleSync);
+      clearInterval(pollInterval);
     };
   }, [userId, navigate]);
 
@@ -250,14 +266,15 @@ export const NotificationBell = () => {
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <button
-          className="relative p-2 rounded-xl text-slate-700 hover:text-slate-900 hover:bg-amber-100/70 active:scale-95 transition-all outline-none"
+          className="relative p-2.5 rounded-2xl text-slate-700 hover:text-slate-900 hover:bg-amber-100/80 active:scale-95 transition-all outline-none group"
           title="ศูนย์แจ้งเตือนผลผลิต"
           aria-label="แจ้งเตือน"
         >
-          <Bell className="w-5 h-5 text-slate-700 hover:text-slate-900 transition-colors" />
+          <Bell className="w-5 h-5 text-slate-700 group-hover:text-amber-700 transition-colors" />
           {unreadCount > 0 && (
-            <span className="absolute top-1 right-1 flex h-4 min-w-[16px] px-1 items-center justify-center rounded-full bg-amber-500 text-[10px] font-black text-slate-950 shadow-sm animate-in zoom-in-50 duration-200">
-              {unreadCount > 9 ? "9+" : unreadCount}
+            <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-red-500 text-[11px] font-black text-white shadow-md border-2 border-white animate-in zoom-in-50 duration-200">
+              <span className="absolute -inset-0.5 rounded-full bg-red-400 opacity-50 animate-ping" />
+              <span className="relative">{unreadCount > 9 ? "9+" : unreadCount}</span>
             </span>
           )}
         </button>
