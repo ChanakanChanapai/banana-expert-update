@@ -300,14 +300,30 @@ const ProductDetail = () => {
       }
 
       // 🔔 2. ส่งการแจ้งเตือนยืนยันคำสั่งจองไปยังผู้ซื้อ (Buyer)
+      const buyerNotifItem = {
+        id: crypto.randomUUID(),
+        title: "ส่งคำขอสั่งจองผลผลิตสำเร็จ! 🍌",
+        message: `คุณได้สั่งจอง "${product.name}" จำนวน ${quantity} ${product.unit} จาก ${product.farm?.farm_name || "ฟาร์ม"} (ยอดรวม ฿${calculatedTotal.toLocaleString()}) สถานะ: รอดำเนินการ`,
+        type: "reservation_created",
+        read: false,
+        link: "/dashboard/orders",
+        created_at: new Date().toISOString(),
+      };
+
+      // 🚀 ส่งสัญญาณอัปเดตไอคอนกระดิ่งทันที 0ms (Optimistic UI)
+      window.dispatchEvent(
+        new CustomEvent("refresh-notifications", { detail: buyerNotifItem })
+      );
+
       try {
         await supabase.from("notifications").insert({
+          id: buyerNotifItem.id,
           user_id: user.id,
-          title: "ส่งคำขอสั่งจองผลผลิตสำเร็จ! 🍌",
-          message: `คุณได้สั่งจอง "${product.name}" จำนวน ${quantity} ${product.unit} จาก ${product.farm?.farm_name || "ฟาร์ม"} (ยอดรวม ฿${calculatedTotal.toLocaleString()}) สถานะ: รอดำเนินการ`,
-          type: "reservation_created",
+          title: buyerNotifItem.title,
+          message: buyerNotifItem.message,
+          type: buyerNotifItem.type,
           read: false,
-          link: "/dashboard/orders",
+          link: buyerNotifItem.link,
         });
       } catch (buyerNotifErr) {
         console.error("Failed to send buyer notification:", buyerNotifErr);

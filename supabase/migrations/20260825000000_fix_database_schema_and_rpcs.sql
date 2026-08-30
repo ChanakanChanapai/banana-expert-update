@@ -596,3 +596,23 @@ WITH CHECK (bucket_id = 'product-images' AND auth.role() = 'authenticated');
 CREATE POLICY "Users can update or delete own product images" 
 ON storage.objects FOR DELETE 
 USING (bucket_id = 'product-images' AND auth.uid()::TEXT = (storage.foldername(name))[1]);
+
+-- ==============================================================================
+-- 6. Notifications RLS Policies (Fix Real-time Alerts between Buyer and Farm)
+-- ==============================================================================
+ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users can view own notifications" ON public.notifications;
+CREATE POLICY "Users can view own notifications" 
+ON public.notifications FOR SELECT 
+USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can update own notifications" ON public.notifications;
+CREATE POLICY "Users can update own notifications" 
+ON public.notifications FOR UPDATE 
+USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Authenticated users can insert notifications" ON public.notifications;
+CREATE POLICY "Authenticated users can insert notifications" 
+ON public.notifications FOR INSERT 
+WITH CHECK (auth.role() = 'authenticated');

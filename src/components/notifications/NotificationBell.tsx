@@ -93,17 +93,25 @@ export const NotificationBell = () => {
       )
       .subscribe();
 
-    // 2. Custom Event Listener สำหรับการ Trigger ภายในหน้าเว็บเดียวกัน (0ms latency)
-    const handleSync = () => {
+    // 2. Custom Event Listener สำหรับการ Trigger ภายในหน้าเว็บเดียวกัน (0ms Instant Optimistic Sync)
+    const handleSync = (event: Event) => {
+      const customEvent = event as CustomEvent<NotificationItem>;
+      if (customEvent.detail && customEvent.detail.title) {
+        const item = customEvent.detail;
+        setNotifications((prev) => {
+          if (prev.some((n) => n.id === item.id)) return prev;
+          return [item, ...prev];
+        });
+      }
       fetchNotifications(userId);
     };
     window.addEventListener("refresh-notifications", handleSync);
     window.addEventListener("focus", handleSync);
 
-    // 3. Polling สำรองทุก 15 วินาที เพื่อให้แน่ใจว่าได้ข้อมูลสดใหม่เสมอ
+    // 3. Polling สำรองทุก 10 วินาที เพื่อให้แน่ใจว่าได้ข้อมูลสดใหม่เสมอ
     const pollInterval = setInterval(() => {
       fetchNotifications(userId);
-    }, 15000);
+    }, 10000);
 
     return () => {
       supabase.removeChannel(channel);
