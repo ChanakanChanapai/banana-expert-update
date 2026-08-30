@@ -121,22 +121,214 @@ export const NotificationBell = () => {
     };
   }, [userId, navigate]);
 
+  const getLocalReadIds = (uid: string): Set<string> => {
+    try {
+      const raw = localStorage.getItem(`read_notifs_${uid}`);
+      return new Set(raw ? JSON.parse(raw) : []);
+    } catch {
+      return new Set();
+    }
+  };
+
+  const saveLocalReadIds = (uid: string, ids: string[]) => {
+    try {
+      localStorage.setItem(`read_notifs_${uid}`, JSON.stringify(ids));
+    } catch (e) {
+      console.error("Save local read ids error:", e);
+    }
+  };
+
   const fetchNotifications = async (currentUserId: string) => {
     try {
-      const { data, error } = await supabase
-        .from("notifications")
-        .select("*")
-        .eq("user_id", currentUserId)
-        .order("created_at", { ascending: false })
-        .limit(30);
+      const localReadIds = getLocalReadIds(currentUserId);
 
-      if (!error && data) {
-        setNotifications(data as NotificationItem[]);
-      } else {
-        setNotifications([]);
+      const [notifsRes, userResRes, userOrdersRes, farmResRes] =
+        await Promise.all([
+          // 1. ตาราง notifications หลัก
+          supabase
+            .from("notifications")
+            .select("*")
+            .eq("user_id", currentUserId)
+            .order("created_at", { ascending: false })
+            .limit(30),
+
+          // 2. รายการจองของผู้ใช้ (ฝั่งผู้ซื้อ)
+          supabase
+            .from("reservations")
+            .select(
+              `
+              id,
+              status,
+              quantity,
+              total_price,
+              created_at,
+              products (
+                name,
+                unit,
+                farm_profiles (
+                  farm_name
+                )
+              )
+            `
+            )
+            .eq("user_id", currentUserId)
+            .order("created_at", { ascending: false })
+            .limit(10),
+
+          // 3. รายการสั่งซื้อของผู้ใช้ (ฝั่งผู้ซื้อ)
+          supabase
+            .from("orders")
+            .select(
+              `
+              id,
+              status,
+              quantity,
+              total_price,
+              created_at,
+              tracking_number,
+              carrier,
+              products (
+                name,
+                unit,
+                farm_profiles (
+                  farm_name
+                )
+              )
+            `
+            )
+            .eq("user_id", currentUserId)
+            .order("created_at", { ascending: false })
+            .limit(10),
+
+          // 4. รายการจองใหม่ที่ส่งมายังฟาร์มของผู้ใช้ (ฝั่งชาวสวน)
+          supabase
+            .from("reservations")
+            .select(
+              `
+              id,
+              status,
+              quantity,
+              total_price,
+              receiver_name,
+              created_at,
+              products!inner (
+                name,
+                unit,
+                farm_id
+              )
+            `
+            )
+            .eq("products.farm_id", currentUserId)
+            .eq("status", "pending")
+            .order("created_at", { ascending: false })
+            .limit(10),
+        ]);
+
+      const itemsMap = new Map<string, NotificationItem>();
+
+      // A. ใส่ข้อมูลจากตาราง notifications จริง
+      if (notifsRes.data) {
+        (notifsRes.data as NotificationItem[]).forEach((n) => {
+          itemsMap.set(n.id, {
+            ...n,
+            read: n.read || localReadIds.has(n.id),
+          });
+        });
       }
-    } catch {
-      setNotifications([]);
+
+      // B. ผสานข้อมูลรายการจองของผู้ซื้อ (Buyer Reservations)
+      if (userResRes.data) {
+        userResRes.data.forEach((r: any) => {
+          const fakeId = `res-${r.id}`;
+          if (!itemsMap.has(fakeId)) {
+            const pName = r.products?.name || "ผลผลิตกล้วย";
+            const fName = r.products?.farm_profiles?.farm_name || "ฟาร์ม";
+            const isRead = localReadIds.has(fakeId) || r.status !== "pending";
+            itemsMap.set(fakeId, {
+              id: fakeId,
+              title:
+                r.status === "pending"
+                  ? "คำขอสั่งจองผลผลิต (รอยืนยัน) 🍌"
+                  : r.status === "confirmed"
+                  ? "คำสั่งจองได้รับการยืนยันแล้ว"
+                  : "คำขอสั่งจองผลผลิต",
+              message: `คุณได้สั่งจอง "${pName}" (${r.quantity} ${r.products?.unit || "ชิ้น"}) จาก ${fName} ยอดรวม ฿${Number(r.total_price || 0).toLocaleString()}`,
+              type: r.status === "pending" ? "reservation_created" : r.status,
+              read: isRead,
+              link: "/dashboard/orders",
+              created_at: r.created_at,
+              related_order_id: r.id,
+            });
+          }
+        });
+      }
+
+      // C. ผสานข้อมูลคำสั่งซื้อของผู้ซื้อ (Buyer Orders)
+      if (userOrdersRes.data) {
+        userOrdersRes.data.forEach((o: any) => {
+          const fakeId = `ord-${o.id}`;
+          if (!itemsMap.has(fakeId)) {
+            const pName = o.products?.name || "ผลผลิตกล้วย";
+            const isShipped = o.status === "shipped";
+            const isDelivered = o.status === "delivered";
+            const isConfirmed = o.status === "confirmed";
+
+            const title = isShipped
+              ? `ผลผลิตกำลังจัดส่ง! 🚚 (${o.carrier || "ขนส่ง"} ${o.tracking_number || ""})`
+              : isDelivered
+              ? "ได้รับผลผลิตเรียบร้อยแล้ว ⭐"
+              : isConfirmed
+              ? "ฟาร์มยืนยันคำสั่งซื้อแล้ว! ✅"
+              : `สถานะคำสั่งซื้อ: ${o.status}`;
+
+            const isRead = localReadIds.has(fakeId) || isDelivered;
+
+            itemsMap.set(fakeId, {
+              id: fakeId,
+              title,
+              message: `คำสั่งซื้อ "${pName}" จำนวน ${o.quantity} ${o.products?.unit || "ชิ้น"} ยอดรวม ฿${Number(o.total_price || 0).toLocaleString()}`,
+              type: o.status,
+              read: isRead,
+              link: "/dashboard/orders",
+              created_at: o.created_at,
+              related_order_id: o.id,
+            });
+          }
+        });
+      }
+
+      // D. ผสานข้อมูลคำขอสั่งจองใหม่สำหรับเจ้าของสวน (Farmer Alerts)
+      if (farmResRes.data) {
+        farmResRes.data.forEach((fr: any) => {
+          const fakeId = `farm-res-${fr.id}`;
+          if (!itemsMap.has(fakeId)) {
+            const pName = fr.products?.name || "ผลผลิต";
+            const cName = fr.receiver_name || "ลูกค้า";
+            const isRead = localReadIds.has(fakeId);
+
+            itemsMap.set(fakeId, {
+              id: fakeId,
+              title: "มีคำขอสั่งจองผลผลิตใหม่จากลูกค้า! 🍌",
+              message: `คุณ ${cName} สั่งจอง "${pName}" (${fr.quantity} ${fr.products?.unit || "ชิ้น"}) ยอดรวม ฿${Number(fr.total_price || 0).toLocaleString()}`,
+              type: "new_order",
+              read: isRead,
+              link: "/farm/orders",
+              created_at: fr.created_at,
+              related_order_id: fr.id,
+            });
+          }
+        });
+      }
+
+      // แปลงเป็น Array และเรียงตามเวลาล่าสุด
+      const sorted = Array.from(itemsMap.values()).sort(
+        (a, b) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+
+      setNotifications(sorted);
+    } catch (err) {
+      console.error("fetchNotifications error:", err);
     }
   };
 
@@ -166,28 +358,38 @@ export const NotificationBell = () => {
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   const markAllAsRead = async () => {
+    if (!userId) return;
+
+    const allIds = notifications.map((n) => n.id);
+    saveLocalReadIds(userId, allIds);
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
 
-    if (userId) {
-      try {
-        await supabase
-          .from("notifications")
-          .update({ read: true })
-          .eq("user_id", userId)
-          .eq("read", false);
-      } catch (e) {
-        console.error("Mark read error:", e);
-      }
+    try {
+      await supabase
+        .from("notifications")
+        .update({ read: true })
+        .eq("user_id", userId)
+        .eq("read", false);
+    } catch (e) {
+      console.error("Mark read error:", e);
     }
   };
 
   const handleNotificationClick = async (notif: NotificationItem) => {
+    if (!userId) return;
+
     // Mark this one as read
+    const currentReadIds = Array.from(getLocalReadIds(userId));
+    if (!currentReadIds.includes(notif.id)) {
+      currentReadIds.push(notif.id);
+      saveLocalReadIds(userId, currentReadIds);
+    }
+
     setNotifications((prev) =>
       prev.map((n) => (n.id === notif.id ? { ...n, read: true } : n))
     );
 
-    if (userId && notif.id) {
+    if (!notif.id.startsWith("res-") && !notif.id.startsWith("ord-") && !notif.id.startsWith("farm-")) {
       try {
         await supabase
           .from("notifications")
