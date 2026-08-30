@@ -19,7 +19,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 
 import { toast } from "sonner";
-import { ArrowLeft, Loader2, ShoppingBag } from "lucide-react";
+import { ArrowLeft, Loader2, ShoppingBag, Minus, Plus } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import ThaiAddressSelector from "@/components/address/ThaiAddressSelector";
 
@@ -388,16 +388,61 @@ const ProductDetail = () => {
               </span>
             </div>
 
-            <div className="flex items-center gap-2">
-              <Label>จำนวน</Label>
-              <Input
-                type="number"
-                min={1}
-                max={product.available_quantity}
-                value={quantity}
-                onChange={(e) => setQuantity(Number(e.target.value))}
-                className="w-24"
-              />
+            <div className="flex items-center justify-between py-1">
+              <div className="space-y-0.5">
+                <Label className="text-sm font-semibold text-slate-800">จำนวนสั่งจอง</Label>
+                <p className="text-xs text-muted-foreground">
+                  สูงสุด {product.available_quantity} {product.unit}
+                </p>
+              </div>
+
+              <div className="flex items-center border border-amber-200/90 rounded-2xl bg-amber-50/40 p-1 shadow-xs">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 rounded-xl bg-white text-slate-700 hover:bg-amber-100 hover:text-amber-900 border border-slate-200/80 shadow-2xs active:scale-95 transition-all disabled:opacity-40"
+                  disabled={quantity <= 1}
+                  onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
+                  aria-label="ลดจำนวน"
+                >
+                  <Minus className="w-3.5 h-3.5" />
+                </Button>
+
+                <input
+                  type="number"
+                  min={1}
+                  max={product.available_quantity}
+                  value={quantity}
+                  onChange={(e) => {
+                    const val = parseInt(e.target.value, 10);
+                    if (isNaN(val) || val < 1) {
+                      setQuantity(1);
+                    } else if (val > product.available_quantity) {
+                      setQuantity(product.available_quantity);
+                    } else {
+                      setQuantity(val);
+                    }
+                  }}
+                  className="w-14 text-center font-bold text-base text-slate-900 bg-transparent border-none focus:outline-hidden focus:ring-0 select-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                />
+
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 rounded-xl bg-white text-slate-700 hover:bg-amber-100 hover:text-amber-900 border border-slate-200/80 shadow-2xs active:scale-95 transition-all disabled:opacity-40"
+                  disabled={quantity >= product.available_quantity}
+                  onClick={() =>
+                    setQuantity((prev) =>
+                      Math.min(product.available_quantity, prev + 1)
+                    )
+                  }
+                  aria-label="เพิ่มจำนวน"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                </Button>
+              </div>
             </div>
 
             <Separator />
