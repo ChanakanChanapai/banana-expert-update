@@ -231,8 +231,9 @@ export const NotificationBell = () => {
         );
       case "pending":
       case "new_order":
+      case "reservation_created":
         return (
-          <div className="w-8 h-8 rounded-xl bg-orange-500/10 text-orange-600 flex items-center justify-center shrink-0 border border-orange-500/20">
+          <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0 border border-amber-500/20">
             <Package className="w-4 h-4" />
           </div>
         );

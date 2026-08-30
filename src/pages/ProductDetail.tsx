@@ -282,13 +282,13 @@ const ProductDetail = () => {
       });
       toast.success("สั่งจองผลผลิตเรียบร้อยแล้ว!");
 
-      // 🔔 ส่งการแจ้งเตือน Real-time ไปยังเจ้าของฟาร์ม (User 2)
+      // 🔔 1. ส่งการแจ้งเตือน Real-time ไปยังเจ้าของฟาร์ม (Farmer)
       if (product.farm?.user_id) {
         try {
           const clientName = finalReceiverName || "ลูกค้า";
           await supabase.from("notifications").insert({
             user_id: product.farm.user_id,
-            title: "มีคำขอสั่งจองผลผลิตใหม่!",
+            title: "มีคำขอสั่งจองผลผลิตใหม่! 🍌",
             message: `คุณ ${clientName} ได้สั่งจอง "${product.name}" จำนวน ${quantity} ${product.unit} (ยอดรวม ฿${calculatedTotal.toLocaleString()})`,
             type: "new_order",
             read: false,
@@ -297,6 +297,20 @@ const ProductDetail = () => {
         } catch (notifErr) {
           console.error("Failed to send farmer notification:", notifErr);
         }
+      }
+
+      // 🔔 2. ส่งการแจ้งเตือนยืนยันคำสั่งจองไปยังผู้ซื้อ (Buyer)
+      try {
+        await supabase.from("notifications").insert({
+          user_id: user.id,
+          title: "ส่งคำขอสั่งจองผลผลิตสำเร็จ! 🍌",
+          message: `คุณได้สั่งจอง "${product.name}" จำนวน ${quantity} ${product.unit} จาก ${product.farm?.farm_name || "ฟาร์ม"} (ยอดรวม ฿${calculatedTotal.toLocaleString()}) สถานะ: รอดำเนินการ`,
+          type: "reservation_created",
+          read: false,
+          link: "/dashboard/orders",
+        });
+      } catch (buyerNotifErr) {
+        console.error("Failed to send buyer notification:", buyerNotifErr);
       }
 
       loadProduct(product.id);
