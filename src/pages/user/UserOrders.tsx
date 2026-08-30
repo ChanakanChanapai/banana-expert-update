@@ -692,13 +692,17 @@ const UserOrders = () => {
                 src={product.image_url}
                 alt={product?.name || "สินค้า"}
                 className="w-full h-full object-cover"
+                onError={(e) => {
+                  (e.currentTarget as HTMLElement).style.display = "none";
+                  const fb = (e.currentTarget as HTMLElement).parentElement?.querySelector(".order-image-fallback") as HTMLElement;
+                  if (fb) fb.style.display = "flex";
+                }}
               />
-            ) : (
-              <div className="flex flex-col items-center justify-center text-muted-foreground/60">
-                <Banana className="w-8 h-8 text-primary/40" />
-                <span className="text-[10px] mt-1">ไม่มีรูปภาพ</span>
-              </div>
-            )}
+            ) : null}
+            <div className={`order-image-fallback flex-col items-center justify-center text-muted-foreground/60 ${product?.image_url ? "hidden" : "flex"}`}>
+              <Banana className="w-8 h-8 text-primary/40" />
+              <span className="text-[10px] mt-1">ไม่มีรูปภาพ</span>
+            </div>
             <Badge
               className={`absolute bottom-1.5 right-1.5 text-[10px] font-bold px-2 py-0.5 shadow-md rounded-md border ${
                 isFruit

@@ -53,6 +53,7 @@ const ProductDetail = () => {
 
   const [loading, setLoading] = useState(true);
   const [product, setProduct] = useState<Product | null>(null);
+  const [imageError, setImageError] = useState(false);
 
   const [openReserve, setOpenReserve] = useState(false);
   const [quantity, setQuantity] = useState(1);
@@ -278,15 +279,25 @@ const ProductDetail = () => {
         </Button>
 
         <div className="grid md:grid-cols-2 gap-8 mt-6">
-          <div className="aspect-square bg-muted rounded-xl flex items-center justify-center overflow-hidden">
-            {product.image_url ? (
+          <div className="aspect-square bg-white rounded-3xl flex items-center justify-center overflow-hidden border border-amber-200/80 shadow-md relative group">
+            {product.image_url && !imageError ? (
               <img
                 src={product.image_url}
                 alt={product.name}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                onError={() => setImageError(true)}
               />
             ) : (
-              <ShoppingBag className="w-20 h-20 text-slate-300" />
+              <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-amber-50/80 via-yellow-50/40 to-slate-50 p-6 text-center">
+                <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-amber-100/90 border border-amber-300/80 flex items-center justify-center mb-4 shadow-sm">
+                  <ShoppingBag className="w-12 h-12 sm:w-14 sm:h-14 text-amber-600" />
+                </div>
+                <h3 className="font-bold text-slate-800 text-lg sm:text-xl">{product.name}</h3>
+                <p className="text-xs sm:text-sm text-slate-500 mt-1">ผลผลิตคุณภาพส่งตรงจากฟาร์ม</p>
+                <span className="mt-3 text-[11px] font-bold px-3 py-1 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
+                  {product.product_type === "fruit" ? "🍌 กล้วยผลสด" : "🌱 หน่อพันธุ์กล้วย"}
+                </span>
+              </div>
             )}
           </div>
 

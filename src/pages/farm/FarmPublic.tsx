@@ -182,18 +182,24 @@ const FarmPublic = () => {
                 className="cursor-pointer hover:shadow-lg transition-all duration-300 overflow-hidden border-none shadow-sm"
                 onClick={() => navigate(`/market/product/${p.id}`)}
               >
-                <div className="aspect-video bg-muted relative">
+                <div className="aspect-video bg-amber-50/60 relative overflow-hidden flex items-center justify-center">
                   {p.image_url ? (
                     <img
                       src={p.image_url}
                       className="w-full h-full object-cover"
                       alt={p.name}
+                      onError={(e) => {
+                        (e.currentTarget as HTMLElement).style.display = "none";
+                        const fb = (e.currentTarget as HTMLElement).parentElement?.querySelector(".image-fallback") as HTMLElement;
+                        if (fb) fb.style.display = "flex";
+                      }}
                     />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-slate-50">
-                      <Package className="w-12 h-12 text-slate-300" />
-                    </div>
-                  )}
+                  ) : null}
+                  
+                  <div className={`image-fallback w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-amber-50 to-yellow-50/60 p-4 ${p.image_url ? "hidden" : "flex"}`}>
+                    <Package className="w-10 h-10 text-amber-500 mb-1" />
+                    <span className="text-xs font-bold text-slate-700 truncate max-w-[90%]">{p.name}</span>
+                  </div>
                   <div className="absolute top-2 right-2">
                     <span className="text-[10px] px-2 py-1 rounded-md bg-white/90 font-bold shadow-sm">
                       {p.product_type === "fruit" ? "ผล" : "หน่อ"}

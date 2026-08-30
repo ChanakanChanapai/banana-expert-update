@@ -123,22 +123,23 @@ const Knowledge = () => {
                   onClick={() => navigate(`/cultivar/${cultivar.slug}`)} // ✅ ลิงก์ไปหน้ารายละเอียด
                 >
                   {/* 🛠️ ส่วนแสดงรูปภาพ: 1:1 (Square) */}
-                  <div className="relative aspect-square bg-muted flex items-center justify-center overflow-hidden">
+                  <div className="relative aspect-square bg-amber-50/60 flex items-center justify-center overflow-hidden">
                     {cultivar.image_url ? (
                       <img 
                         src={cultivar.image_url} 
                         alt={cultivar.thai_name}
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                         onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = 'none';
+                          (e.currentTarget as HTMLElement).style.display = 'none';
+                          const fb = (e.currentTarget as HTMLElement).parentElement?.querySelector(".know-image-fallback") as HTMLElement;
+                          if (fb) fb.style.display = "flex";
                         }}
                       />
-                    ) : (
-                      <div className="flex flex-col items-center gap-3">
-                        <Leaf className="w-16 h-16 text-amber-500/40 group-hover:scale-110 transition-transform duration-300" />
-                        <span className="text-xs font-bold text-muted-foreground tracking-wider">ไม่มีรูปภาพ</span>
-                      </div>
-                    )}
+                    ) : null}
+                    <div className={`know-image-fallback flex-col items-center gap-3 ${cultivar.image_url ? "hidden" : "flex"}`}>
+                      <Leaf className="w-16 h-16 text-amber-500/40 group-hover:scale-110 transition-transform duration-300" />
+                      <span className="text-xs font-bold text-muted-foreground tracking-wider">ไม่มีรูปภาพ</span>
+                    </div>
                     {/* Overlay ตอน Hover */}
                     <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                        <div className="bg-white/90 text-black px-4 py-2 rounded-full font-bold text-sm shadow-sm">คลิกดูข้อมูลสายพันธุ์</div>

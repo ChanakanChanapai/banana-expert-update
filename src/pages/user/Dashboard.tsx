@@ -749,10 +749,16 @@ const Dashboard = () => {
                             src={item.image_url}
                             alt={item.product_name}
                             className="w-full h-full object-cover"
+                            onError={(e) => {
+                              (e.currentTarget as HTMLElement).style.display = "none";
+                              const fb = (e.currentTarget as HTMLElement).parentElement?.querySelector(".dash-thumb-fallback") as HTMLElement;
+                              if (fb) fb.style.display = "flex";
+                            }}
                           />
-                        ) : (
+                        ) : null}
+                        <div className={`dash-thumb-fallback items-center justify-center ${item.image_url ? "hidden" : "flex"}`}>
                           <Banana className="w-6 h-6 text-primary/40" />
-                        )}
+                        </div>
                       </div>
 
                       {/* Info */}

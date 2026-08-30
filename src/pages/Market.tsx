@@ -299,18 +299,28 @@ const Market = () => {
                   onClick={() => navigate(`/market/product/${p.id}`)}
                 >
                   {/* Image Container */}
-                  <div className="aspect-[4/3] bg-muted relative overflow-hidden">
+                  <div className="aspect-[4/3] bg-amber-50/60 relative overflow-hidden flex items-center justify-center">
                     {p.image_url ? (
                       <img 
                         src={p.image_url} 
                         alt={p.name} 
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        onError={(e) => {
+                          (e.currentTarget as HTMLElement).style.display = "none";
+                          const fb = (e.currentTarget as HTMLElement).parentElement?.querySelector(".image-fallback") as HTMLElement;
+                          if (fb) fb.style.display = "flex";
+                        }}
                       />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-amber-50/50">
-                        <ShoppingBag className="w-14 h-14 text-amber-300" />
+                    ) : null}
+                    
+                    <div 
+                      className={`image-fallback w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-amber-50 to-yellow-50/60 p-4 ${p.image_url ? "hidden" : "flex"}`}
+                    >
+                      <div className="w-12 h-12 rounded-2xl bg-amber-100/90 border border-amber-200 flex items-center justify-center mb-1.5 shadow-2xs">
+                        <ShoppingBag className="w-6 h-6 text-amber-600" />
                       </div>
-                    )}
+                      <span className="text-xs font-bold text-slate-700 truncate max-w-[90%]">{p.name}</span>
+                    </div>
                     
                     {/* Product Type Label */}
                     <div className="absolute top-4 left-4">
