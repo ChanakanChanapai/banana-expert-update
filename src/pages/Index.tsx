@@ -7,7 +7,7 @@ import {
   Upload, Book, Store, Utensils,
   Sprout, Droplets, BookOpen, Search, RefreshCw,
   ArrowRight, ShieldCheck, Cpu, HeartPulse, Sparkles, CheckCircle2,
-  ScanLine, Eye
+  ScanLine, Eye, Wifi, WifiOff, AlertTriangle
 } from "lucide-react";
 import { useNavigate, useNavigationType, useLocation } from "react-router-dom";
 import { toast } from "sonner";
@@ -36,7 +36,7 @@ const Index = () => {
   const [previewUrl, setPreviewUrl] = useState<string>("");
   const [detecting, setDetecting] = useState(false);
   const [isConsent, setIsConsent] = useState(false); // ✅ เพิ่ม State ยินยอมเก็บข้อมูล
-  
+
   // 🚀 AI Progress Bar & Stages
   const [progressPercent, setProgressPercent] = useState<number>(0);
   const [processStage, setProcessStage] = useState<number>(1);
@@ -44,6 +44,11 @@ const Index = () => {
   const [result, setResult] = useState<any>(null);
   const [bananaDetails, setBananaDetails] = useState<any>(null);
   const resultRef = useRef<HTMLDivElement>(null);
+
+  // 🟢 Server Status Badge State
+  type ServerStatus = "online" | "hybrid_standby" | "unknown";
+  const [serverStatus, setServerStatus] = useState<ServerStatus>("unknown");
+  const [isFallbackResult, setIsFallbackResult] = useState(false);
 
   useEffect(() => {
     const isReload = (
@@ -99,6 +104,7 @@ const Index = () => {
     setProgressPercent(0);
     setProcessStage(1);
     setIsConsent(false); // ✅ Reset consent
+    setIsFallbackResult(false);
     window.scrollTo({ top: 0, behavior: "smooth" });
     toast.info("ล้างข้อมูลเรียบร้อย เริ่มสแกนใหม่ได้เลยครับ");
   };
@@ -156,6 +162,17 @@ const Index = () => {
 
       const data = await response.json();
       console.log("AI response:", data);
+
+      // ✅ อัปเดตสถานะ Server จาก Response
+      const statusFromServer = data?.server_status;
+      if (statusFromServer === "online") {
+        setServerStatus("online");
+        setIsFallbackResult(false);
+      } else if (data?.is_fallback === true || statusFromServer === "hybrid_standby") {
+        setServerStatus("hybrid_standby");
+        setIsFallbackResult(true);
+        toast.warning("ระบบ AI หลักกำลังเปิดตัว ใช้โหมดสำรองอัจฉริยะ (Hybrid Standby)");
+      }
 
       // ❌ AI fail
       if (!data?.success) {
@@ -287,6 +304,22 @@ const Index = () => {
               </span>
               <span className="text-xs md:text-sm font-bold">ระบบวิเคราะห์อัจฉริยะ AI</span>
             </div>
+
+            {/* 🟢 Server Status Badge */}
+            {serverStatus !== "unknown" && (
+              <div className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full mb-2 ${
+                serverStatus === "online"
+                  ? "bg-emerald-100 text-emerald-700 border border-emerald-200"
+                  : "bg-amber-100 text-amber-800 border border-amber-200"
+              }`}>
+                {serverStatus === "online" ? (
+                  <><Wifi className="w-3.5 h-3.5" /> 🟢 AI Server Cloud Online</>
+                ) : (
+                  <><WifiOff className="w-3.5 h-3.5" /> 🟡 โหมดสำรองข้อมูลอัจฉริยะ Hybrid Standby</>
+                )}
+              </div>
+            )}
+
             <h3 className="text-2xl md:text-3xl font-bold mb-1">จำแนกสายพันธุ์กล้วย</h3>
             {previewUrl && (
               <Button
@@ -402,6 +435,16 @@ const Index = () => {
                 ref={resultRef}
                 className="mt-10 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500"
               >
+                {/* ⚠️ Fallback Mode Warning Banner */}
+                {isFallbackResult && (
+                  <div className="flex items-start gap-3 bg-amber-50 border border-amber-300 rounded-xl p-4 text-sm">
+                    <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-bold text-amber-800">โหมดสำรองอัจฉริยะ (Hybrid Standby)</p>
+                      <p className="text-amber-700 text-xs mt-0.5">เซิร์ฟเวอร์ AI กำลังเปิดตัว (Cold Start) ผลลัพธ์นี้เป็นการประเมินเบื้องต้นจากระบบสำรอง กรุณาลองสแกนใหม่อีกครั้งใน 30 วินาทีเพื่อความแม่นยำสูงสุด</p>
+                    </div>
+                  </div>
+                )}
                 <Card className="p-6 rounded-2xl shadow-lg border-l-8 border-yellow-400 bg-white">
                   <div className="flex flex-col md:flex-row justify-between items-center gap-4">
                     <div className="text-center md:text-left">
