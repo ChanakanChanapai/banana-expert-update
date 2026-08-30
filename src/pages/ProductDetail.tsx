@@ -19,7 +19,21 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 
 import { toast } from "sonner";
-import { ArrowLeft, Loader2, ShoppingBag, Minus, Plus } from "lucide-react";
+import {
+  ArrowLeft,
+  Loader2,
+  ShoppingBag,
+  Minus,
+  Plus,
+  CheckCircle2,
+  XCircle,
+  Clock,
+  MapPin,
+  Store,
+  PackageCheck,
+  AlertTriangle,
+  ArrowRight
+} from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import ThaiAddressSelector from "@/components/address/ThaiAddressSelector";
 
@@ -30,6 +44,18 @@ interface FarmProfile {
   farm_name: string;
   farm_location: string;
   user_id?: string;
+}
+
+export interface ReserveStatusInfo {
+  status: "success" | "error";
+  productName: string;
+  quantity: number;
+  unit: string;
+  totalPrice: number;
+  farmName: string;
+  receiverName: string;
+  deliveryAddress: string;
+  errorMessage?: string;
 }
 
 interface Product {
@@ -56,6 +82,7 @@ const ProductDetail = () => {
   const [imageError, setImageError] = useState(false);
 
   const [openReserve, setOpenReserve] = useState(false);
+  const [reserveStatus, setReserveStatus] = useState<ReserveStatusInfo | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [note, setNote] = useState("");
 
@@ -69,9 +96,6 @@ const ProductDetail = () => {
 
   const [savedFullName, setSavedFullName] = useState<string | null>(null);
   const [savedPhone, setSavedPhone] = useState<string | null>(null);
-
-
-
 
   /* ---------- Load Product ---------- */
 
@@ -124,13 +148,16 @@ const ProductDetail = () => {
 
   const loadUserAddress = async () => {
     const {
-      data: { user },
-    } = await supabase.auth.getUser();
+      data: { session },
+    } = await supabase.auth.getSession();
 
-    if (!user) {
-      toast.error("กรุณาเข้าสู่ระบบ");
+    if (!session || !session.user) {
+      toast.error("กรุณาเข้าสู่ระบบก่อนทำการสั่งจอง");
+      navigate("/auth/login");
       return false;
     }
+
+    const user = session.user;
 
     const { data, error } = await supabase
       .from("profiles")
@@ -155,7 +182,6 @@ const ProductDetail = () => {
 
     return true;
   };
-
 
   /* ---------- Reserve ---------- */
 
@@ -184,12 +210,12 @@ const ProductDetail = () => {
       }
 
       if (!receiverPhone.trim()) {
-        toast.error("กรุณากรอกเบอร์โทร");
+        toast.error("กรุณากรอกเบอร์โทรศัพท์ผู้รับ");
         return;
       }
 
       if (!newAddress.trim()) {
-        toast.error("กรุณากรอกที่อยู่ใหม่");
+        toast.error("กรุณาระบุที่อยู่จัดส่ง");
         return;
       }
     }
@@ -197,12 +223,13 @@ const ProductDetail = () => {
     setSubmitting(true);
 
     const {
-      data: { user },
-    } = await supabase.auth.getUser();
+      data: { session },
+    } = await supabase.auth.getSession();
 
-    if (!user) {
+    if (!session || !session.user) {
       toast.error("กรุณาเข้าสู่ระบบ");
       setSubmitting(false);
+      navigate("/auth/login");
       return;
     }
 
@@ -210,6 +237,7 @@ const ProductDetail = () => {
     const finalReceiverName = useProfile ? (savedFullName || null) : receiverName.trim();
     const finalReceiverPhone = useProfile ? (savedPhone || null) : receiverPhone.trim();
     const deliveryAddress = useProfile ? (savedAddress || null) : newAddress.trim();
+    const calculatedTotal = quantity * product.price_per_unit;
 
     const { error } = await supabase.rpc("reserve_v5", {
       p_product_id: product.id,
@@ -221,25 +249,47 @@ const ProductDetail = () => {
       p_delivery_address: deliveryAddress,
     });
 
-
     if (error) {
-      toast.error(
-        error.message?.includes("สินค้าในสต็อกไม่เพียงพอ")
-          ? "สินค้าในสต็อกไม่เพียงพอ"
-          : "จองสินค้าไม่สำเร็จ");
-    } else {
-      toast.success("ส่งคำขอสั่งจองผลผลิตเรียบร้อยแล้ว");
+      const isStockError = error.message?.includes("สินค้าในสต็อกไม่เพียงพอ");
+      const errorMsg = isStockError
+        ? "ขออภัย สินค้าในสต็อกไม่เพียงพอสำหรับจำนวนที่คุณต้องการสั่งจอง (มีผู้สั่งจองในเวลาเดียวกัน)"
+        : (error.message || "เกิดข้อผิดพลาดในการบันทึกคำสั่งจอง กรุณาลองใหม่อีกครั้ง");
+
       setOpenReserve(false);
+      setReserveStatus({
+        status: "error",
+        productName: product.name,
+        quantity,
+        unit: product.unit,
+        totalPrice: calculatedTotal,
+        farmName: product.farm?.farm_name || "ฟาร์มกล้วย",
+        receiverName: finalReceiverName || "ลูกค้า",
+        deliveryAddress: deliveryAddress || "-",
+        errorMessage: errorMsg,
+      });
+      toast.error("ไม่สามารถทำรายการสั่งจองได้");
+    } else {
+      setOpenReserve(false);
+      setReserveStatus({
+        status: "success",
+        productName: product.name,
+        quantity,
+        unit: product.unit,
+        totalPrice: calculatedTotal,
+        farmName: product.farm?.farm_name || "ฟาร์มกล้วย",
+        receiverName: finalReceiverName || "ลูกค้า",
+        deliveryAddress: deliveryAddress || "-",
+      });
+      toast.success("สั่งจองผลผลิตเรียบร้อยแล้ว!");
 
       // 🔔 ส่งการแจ้งเตือน Real-time ไปยังเจ้าของฟาร์ม (User 2)
       if (product.farm?.user_id) {
         try {
           const clientName = finalReceiverName || "ลูกค้า";
-          const subtotal = Number(product.price_per_unit) * Number(quantity);
           await supabase.from("notifications").insert({
             user_id: product.farm.user_id,
             title: "มีคำขอสั่งจองผลผลิตใหม่!",
-            message: `คุณ ${clientName} ได้สั่งจอง "${product.name}" จำนวน ${quantity} ${product.unit} (ยอดรวม ฿${subtotal.toLocaleString()})`,
+            message: `คุณ ${clientName} ได้สั่งจอง "${product.name}" จำนวน ${quantity} ${product.unit} (ยอดรวม ฿${calculatedTotal.toLocaleString()})`,
             type: "new_order",
             read: false,
             link: "/farm/orders",
@@ -524,11 +574,169 @@ const ProductDetail = () => {
             <Button
               onClick={handleReserve}
               disabled={submitting}
-              className="w-full"
+              className="w-full h-11 text-base font-bold bg-amber-500 hover:bg-amber-600 text-slate-950 shadow-md rounded-xl"
             >
-              ยืนยันการจอง ฿{totalPrice.toLocaleString()}
+              {submitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" /> กำลังส่งคำสั่งจอง...
+                </>
+              ) : (
+                `ยืนยันการจอง ฿${totalPrice.toLocaleString()}`
+              )}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ---------- 🟢 Reservation Status Result Modal (สำเร็จ / ไม่สำเร็จ) ---------- */}
+      <Dialog
+        open={Boolean(reserveStatus)}
+        onOpenChange={(open) => {
+          if (!open) setReserveStatus(null);
+        }}
+      >
+        <DialogContent className="max-w-md p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-white animate-in zoom-in-95 duration-200">
+          {reserveStatus?.status === "success" ? (
+            <div>
+              {/* 🟢 Success Header */}
+              <div className="bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 p-6 text-white text-center relative">
+                <div className="w-16 h-16 rounded-full bg-white/20 border-2 border-white/40 flex items-center justify-center mx-auto mb-3 shadow-inner">
+                  <CheckCircle2 className="w-10 h-10 text-white animate-in zoom-in-50 duration-300" />
+                </div>
+                <h3 className="text-2xl font-black tracking-tight">สั่งจองผลผลิตสำเร็จ!</h3>
+                <p className="text-xs sm:text-sm text-emerald-100 mt-1">
+                  ระบบได้บันทึกคำสั่งจองและแจ้งเตือนไปยังเจ้าของสวนแล้ว
+                </p>
+
+                <div className="inline-flex items-center gap-1.5 bg-white/20 backdrop-blur-md text-white text-xs font-semibold px-3 py-1 rounded-full mt-3 shadow-xs">
+                  <Clock className="w-3.5 h-3.5" />
+                  <span>สถานะ: รอดำเนินการ (Pending)</span>
+                </div>
+              </div>
+
+              {/* Order Summary Details */}
+              <div className="p-6 space-y-4">
+                <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 space-y-2.5 text-xs sm:text-sm">
+                  <div className="flex justify-between items-center pb-2 border-b border-slate-200/60">
+                    <span className="text-muted-foreground">ผลผลิตที่จอง</span>
+                    <span className="font-bold text-slate-800">{reserveStatus.productName}</span>
+                  </div>
+
+                  <div className="flex justify-between items-center pb-2 border-b border-slate-200/60">
+                    <span className="text-muted-foreground">จำนวน</span>
+                    <span className="font-bold text-slate-800">
+                      {reserveStatus.quantity} {reserveStatus.unit}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center pb-2 border-b border-slate-200/60">
+                    <span className="text-muted-foreground">ราคารวมทั้งสิ้น</span>
+                    <span className="font-extrabold text-base text-emerald-600">
+                      ฿{reserveStatus.totalPrice.toLocaleString()}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center pb-2 border-b border-slate-200/60">
+                    <span className="text-muted-foreground flex items-center gap-1">
+                      <Store className="w-3.5 h-3.5 text-slate-400" /> ฟาร์ม
+                    </span>
+                    <span className="font-medium text-slate-700">{reserveStatus.farmName}</span>
+                  </div>
+
+                  <div className="pt-1 text-slate-600 space-y-1">
+                    <div className="font-semibold text-slate-700 flex items-center gap-1">
+                      <MapPin className="w-3.5 h-3.5 text-slate-400" /> จัดส่งถึง: {reserveStatus.receiverName}
+                    </div>
+                    <p className="text-[11px] sm:text-xs text-muted-foreground pl-4.5 line-clamp-2">
+                      {reserveStatus.deliveryAddress}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="bg-amber-50 border border-amber-200/70 rounded-xl p-3 flex items-start gap-2.5 text-xs text-amber-800">
+                  <PackageCheck className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                  <p className="leading-relaxed">
+                    คุณสามารถติดตามความคืบหน้าการจัดเตรียม และตรวจสอบเลขพัสดุได้ตลอด 24 ชม. ที่หน้ารายการสั่งซื้อ
+                  </p>
+                </div>
+
+                {/* Actions */}
+                <div className="space-y-2 pt-2">
+                  <Button
+                    className="w-full h-12 rounded-xl text-sm sm:text-base font-bold bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-md flex items-center justify-center gap-2"
+                    onClick={() => {
+                      setReserveStatus(null);
+                      navigate("/dashboard/orders");
+                    }}
+                  >
+                    <span>ดูคำสั่งซื้อของฉัน</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    className="w-full h-11 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-50 border-slate-200"
+                    onClick={() => {
+                      setReserveStatus(null);
+                      navigate("/market");
+                    }}
+                  >
+                    เลือกดูสินค้าอื่นในตลาดต่อ
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div>
+              {/* 🔴 Failed Header */}
+              <div className="bg-gradient-to-r from-rose-500 to-red-600 p-6 text-white text-center relative">
+                <div className="w-16 h-16 rounded-full bg-white/20 border-2 border-white/40 flex items-center justify-center mx-auto mb-3 shadow-inner">
+                  <XCircle className="w-10 h-10 text-white animate-in zoom-in-50 duration-300" />
+                </div>
+                <h3 className="text-2xl font-black tracking-tight">การสั่งจองไม่สำเร็จ</h3>
+                <p className="text-xs sm:text-sm text-rose-100 mt-1">
+                  ไม่สามารถบันทึกรายการสั่งจองได้ในขณะนี้
+                </p>
+              </div>
+
+              {/* Error Explanation */}
+              <div className="p-6 space-y-4">
+                <div className="bg-rose-50 border border-rose-200 rounded-2xl p-4 flex items-start gap-3 text-rose-800">
+                  <AlertTriangle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="font-bold text-sm">สาเหตุข้อผิดพลาด</h4>
+                    <p className="text-xs mt-1 leading-relaxed text-rose-700">
+                      {reserveStatus?.errorMessage || "เกิดข้อผิดพลาดจากระบบ กรุณาตรวจสอบและลองใหม่อีกครั้ง"}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="space-y-2 pt-2">
+                  <Button
+                    className="w-full h-12 rounded-xl text-sm sm:text-base font-bold bg-amber-500 hover:bg-amber-600 text-slate-950 shadow-md"
+                    onClick={() => {
+                      setReserveStatus(null);
+                      setOpenReserve(true);
+                    }}
+                  >
+                    ลองทำรายการใหม่อีกครั้ง
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    className="w-full h-11 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-50 border-slate-200"
+                    onClick={() => {
+                      setReserveStatus(null);
+                      navigate("/market");
+                    }}
+                  >
+                    กลับไปยังตลาดผลผลิต
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
