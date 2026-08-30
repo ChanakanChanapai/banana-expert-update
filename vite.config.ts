@@ -22,4 +22,13 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  // ✅ Vitest Configuration — ติดตั้งระบบเทสอัตโนมัติ
+  test: {
+    globals: true,
+    environment: "node",
+    include: ["src/**/*.test.ts", "src/**/*.test.tsx"],
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
+  },
 }));

@@ -1,3 +1,4 @@
+import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -28,6 +29,7 @@ const Auth = () => {
   const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -37,7 +39,7 @@ const Auth = () => {
   useEffect(() => {
     // 1. ตรวจสอบ Session ปัจจุบัน
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
+      if (session?.user) {
         navigate("/dashboard", { replace: true });
       }
     });
@@ -46,7 +48,7 @@ const Auth = () => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
-      if ((event === "SIGNED_IN" || event === "INITIAL_SESSION") && session) {
+      if ((event === "SIGNED_IN" || event === "INITIAL_SESSION") && session?.user) {
         navigate("/dashboard", { replace: true });
       }
     });
@@ -85,17 +87,17 @@ const Auth = () => {
           console.error("Auth Error:", error);
           
           if (error.message.includes("Invalid login credentials")) {
-            toast.error("อีเมลหรือรหัสผ่านไม่ถูกต้อง กรุณาเช็คใหม่อีกครั้งน้าบ");
+            toast.error("อีเมลหรือรหัสผ่านไม่ถูกต้อง กรุณาตรวจสอบใหม่อีกครั้ง");
           } else if (error.message.includes("Email not confirmed")) {
-            toast.error("อีเมลนี้ยังไม่ได้ยืนยัน! อย่าลืมเช็คในเมลหรือปิด Confirm Email ใน Supabase นะ");
+            toast.error("อีเมลนี้ยังไม่ได้รับการยืนยัน กรุณาตรวจสอบกล่องข้อความในอีเมลของคุณ");
           } else {
-            toast.error(error.message); // กรณี Error อื่นๆ เช่น Network หรือ Server
+            toast.error(error.message);
           }
           setLoading(false);
           return;
         }
 
-        toast.success("Welcome back!");
+        toast.success("เข้าสู่ระบบเรียบร้อยแล้ว");
         navigate("/dashboard", { replace: true });
 
       } else {
@@ -120,7 +122,7 @@ const Auth = () => {
 
         if (error) {
           if (error.message.includes("User already registered")) {
-            toast.error("อีเมลนี้ถูกใช้ไปแล้วพี่ชาย ลองเปลี่ยนเมลหรือกด Login ดูนะ");
+            toast.error("อีเมลนี้ถูกลงทะเบียนไว้แล้ว สามารถกดเข้าสู่ระบบได้ทันที");
           } else {
             toast.error(error.message);
           }
@@ -128,11 +130,11 @@ const Auth = () => {
           return;
         }
 
-        toast.success("Account created! Please sign in.");
+        toast.success("สมัครสมาชิกสำเร็จเรียบร้อยแล้ว! กรุณาเข้าสู่ระบบ");
         setIsLogin(true);
       }
     } catch (err: any) {
-      toast.error(err.message || "Something went wrong");
+      toast.error(err.message || "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง");
     } finally {
       setLoading(false);
     }
@@ -142,7 +144,7 @@ const Auth = () => {
 
   const handleForgotPassword = async () => {
     if (!formData.email) {
-      toast.error("Please enter your email first");
+      toast.error("กรุณากรอกที่อยู่อีเมลก่อน");
       return;
     }
 
@@ -154,7 +156,7 @@ const Auth = () => {
     );
 
     if (error) toast.error(error.message);
-    else toast.success("Password reset email sent!");
+    else toast.success("ส่งลิงก์รีเซ็ตรหัสผ่านไปยังอีเมลของคุณเรียบร้อยแล้ว");
   };
 
   /* ---------------- UI ---------------- */
@@ -197,16 +199,31 @@ const Auth = () => {
 
           <div>
             <Label className="text-slate-700 font-semibold mb-1 block">รหัสผ่าน</Label>
-            <Input
-              type="password"
-              placeholder="กรอกรหัสผ่านของคุณ"
-              value={formData.password}
-              onChange={(e) =>
-                setFormData({ ...formData, password: e.target.value })
-              }
-              required
-              className="rounded-xl h-11"
-            />
+            <div className="relative">
+              <Input
+                type={showPassword ? "text" : "password"}
+                placeholder="กรอกรหัสผ่านของคุณ"
+                value={formData.password}
+                onChange={(e) =>
+                  setFormData({ ...formData, password: e.target.value })
+                }
+                required
+                className="rounded-xl h-11 pr-11"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 p-1 rounded-lg transition-colors focus:outline-none"
+                aria-label={showPassword ? "ซ่อนรหัสผ่าน" : "แสดงรหัสผ่าน"}
+                title={showPassword ? "ซ่อนรหัสผ่าน" : "แสดงรหัสผ่าน"}
+              >
+                {showPassword ? (
+                  <EyeOff className="w-5 h-5" />
+                ) : (
+                  <Eye className="w-5 h-5" />
+                )}
+              </button>
+            </div>
           </div>
 
           <Button className="w-full h-12 rounded-xl text-base font-bold bg-amber-500 hover:bg-amber-600 text-slate-950 shadow-md" disabled={loading}>

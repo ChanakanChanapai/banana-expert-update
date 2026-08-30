@@ -473,6 +473,30 @@ const UserOrders = () => {
 
       toast.success("ยืนยันรับสินค้าเรียบร้อยแล้ว ขอบคุณครับ");
 
+      // 🔔 ส่งการแจ้งเตือนไปยังเจ้าของฟาร์ม (User 2)
+      if (order.farm_id) {
+        try {
+          const { data: farmProfile } = await supabase
+            .from("farm_profiles")
+            .select("user_id")
+            .eq("id", order.farm_id)
+            .maybeSingle();
+
+          if (farmProfile?.user_id) {
+            await supabase.from("notifications").insert({
+              user_id: farmProfile.user_id,
+              title: "ลูกค้ายืนยันรับผลผลิตแล้ว!",
+              message: `ลูกค้าได้รับ "${order.products?.name || "ผลผลิตกล้วย"}" เรียบร้อยแล้ว`,
+              type: "confirmed",
+              read: false,
+              link: "/farm/orders",
+            });
+          }
+        } catch (e) {
+          console.error("Notify farm of receipt error:", e);
+        }
+      }
+
       setSelectedOrder(order as any);
       setOpenReview(true);
       await loadAll();
@@ -525,6 +549,31 @@ const UserOrders = () => {
       if (error) throw error;
 
       toast.success("ขอบคุณสำหรับคะแนนและรีวิวสินค้า");
+
+      // 🔔 ส่งการแจ้งเตือนรีวิวไปยังเจ้าของฟาร์ม (User 2)
+      if (selectedOrder.farm_id) {
+        try {
+          const { data: farmProfile } = await supabase
+            .from("farm_profiles")
+            .select("user_id")
+            .eq("id", selectedOrder.farm_id)
+            .maybeSingle();
+
+          if (farmProfile?.user_id) {
+            await supabase.from("notifications").insert({
+              user_id: farmProfile.user_id,
+              title: "ได้รับรีวิวใหม่จากลูกค้า!",
+              message: `ลูกค้าได้ให้คะแนน ${rating} ดาว สำหรับ "${selectedOrder.products?.name || "ผลผลิตกล้วย"}"`,
+              type: "review",
+              read: false,
+              link: `/farm/reviews/${selectedOrder.farm_id}`,
+            });
+          }
+        } catch (e) {
+          console.error("Notify farm of review error:", e);
+        }
+      }
+
       setOpenReview(false);
       setSelectedOrder(null);
       setRating(5);

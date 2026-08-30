@@ -119,19 +119,20 @@ const Navbar = () => {
     };
   }, [session, location.pathname]); 
 
-  // ✨ จุดที่แก้ไข: บันทึกเวลาวินาทีสุดท้ายก่อน Logout
+  // ✨ จุดที่แก้ไข: บันทึกเวลาวินาทีสุดท้ายก่อน Logout และเคลียร์สถานะทันที
   const handleSignOut = async () => {
     try {
       if (session?.user) {
-        // อัปเดตเวลาครั้งสุดท้ายก่อนออกจากระบบจริงๆ
         await updateLastSeen(session.user.id);
       }
     } catch (error) {
       console.error("Error updating status before signout:", error);
     } finally {
       await supabase.auth.signOut();
-      toast.success("ออกจากระบบเรียบร้อย");
-      navigate("/");
+      setSession(null);
+      setIsFarmRole(false);
+      toast.success("ออกจากระบบเรียบร้อยแล้ว");
+      navigate("/", { replace: true });
     }
   };
 

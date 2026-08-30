@@ -88,6 +88,16 @@ const Dashboard = () => {
 
   useEffect(() => {
     init();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!session && event === "SIGNED_OUT") {
+        navigate("/auth/login", { replace: true });
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const init = async () => {
@@ -97,12 +107,13 @@ const Dashboard = () => {
         data: { session },
       } = await supabase.auth.getSession();
 
-      if (!session || !session.user) {
+      const currentUser = session?.user;
+
+      if (!currentUser) {
         navigate("/auth/login", { replace: true });
         return;
       }
 
-      const currentUser = session.user;
       setUser(currentUser);
 
       const [roles] = await Promise.all([

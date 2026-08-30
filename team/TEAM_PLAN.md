@@ -44,17 +44,8 @@
 * **Branch ที่แนะนำ:** `feature/ai-backend-docker`
 * **รายการงาน (Tasks):**
   - [ ] **2.1 รัน FastAPI ด้วย Docker**: บรรจุโมเดล AI และ FastAPI ลง Docker Container (จำกัด RAM ไม่ให้เครื่องค้าง)
-  - [ ] **2.2 ปรับปรุง Endpoint `/detect`**: รับรูปภาพแล้วคืนค่า JSON ผลลัพธ์:
-    ```json
-    {
-      "success": true,
-      "banana_key": "homthong",
-      "disease": "panama_disease",
-      "confidence": 0.92,
-      "suggestion": "แนวทางรักษา..."
-    }
-    ```
-  - [ ] **2.3 เชื่อมต่อกับ Frontend**: ทดสอบการส่งรูปภาพจากหน้าแรก (`Index.tsx`) ไปยัง Backend และแสดงผลลัพธ์บนการ์ด AI Detection
+  - [x] **2.2 ปรับปรุง Endpoint `/detect`** (Hybrid Proxy): ปรับ Timeout 9s + Retry 1x + Smart Fallback Engine (`api/detect.ts`) คืนค่า `is_fallback: true` + `server_status: hybrid_standby` กรณี Render Server ไม่ตอบสนอง
+  - [x] **2.3 เชื่อมต่อกับ Frontend**: `Index.tsx` แสดง Server Status Badge (🟢/🟡), รองรับ Fallback Warning Banner และ Error Recovery อย่างนุ่มนวล
 
 ---
 
@@ -62,11 +53,11 @@
 * **ผู้รับผิดชอบหลัก:** Frontend Engineer
 * **Branch ที่แนะนำ:** `feature/chatbot-assistant`
 * **รายการงาน (Tasks):**
-  - [ ] **3.1 ขยายฐานความรู้**: เพิ่มหมวดหมู่ความรู้ใน `src/lib/chatbot-knowledge.ts`:
-    - 🖥️ **วิธีใช้งานเว็บ**: วิธีสแกนรูป, วิธีจองกล้วยใน Market, วิธีเปิดร้านฟาร์ม
+  - [x] **3.1 ขยายฐานความรู้**: เพิ่มหมวดหมู่ความรู้ครบ 3 เสาหลักใน `src/lib/chatbot-knowledge.ts`:
+    - 🖥️ **วิธีใช้งานเว็บ**: วิธีสแกนรูป, วิธีจองกล้วยใน Market, วิธีเปิดร้านฟาร์ม, การแก้ไขโปรไฟล์
     - 🚜 **ข้อมูลฟาร์ม**: วิธีเช็คโปรไฟล์ฟาร์ม, เรตติ้งรีวิว, พิกัดฟาร์ม
-  - [ ] **3.2 เพิ่ม Suggested Question Chips**: แสดงปุ่มคำถามแนะนำด่วนในหน้าต่างแชท (เช่น *"สแกนกล้วยยังไง?"*, *"วิธีเปิดร้านฟาร์ม"*)
-  - [ ] **3.3 รักษาคุณสมบัติ Stateless**: ไม่มีการเก็บเซสชันค้างข้ามวัน รีเฟรชแล้วเริ่มต้นใหม่อย่างสะอาด
+  - [x] **3.2 เพิ่ม Suggested Question Chips**: Quick Pillar Cards 3 หมวดใน `BananaChatbot.tsx` พร้อม In-Message Action Buttons นำทางได้จริง
+  - [x] **3.3 รักษาคุณสมบัติ Stateless**: Stateless Session สมบูรณ์ รีเฟรชแล้วเริ่มต้นใหม่อย่างสะอาด
 
 ---
 
@@ -85,9 +76,9 @@
 * **ผู้รับผิดชอบหลัก:** QA / Testing Engineer
 * **Branch ที่แนะนำ:** `feature/automated-tests`
 * **รายการงาน (Tasks):**
-  - [ ] **5.1 Unit Tests**: สร้าง Unit Tests ด้วย Vitest สำหรับ `chatbot-knowledge.ts` และ Utility functions
+  - [x] **5.1 Unit Tests**: สร้าง Unit Tests ด้วย Vitest (`src/lib/__tests__/chatbot-knowledge.test.ts`) ครอบคลุม 3 เสาหลัก 17 Test Cases พร้อมตั้งค่า Vitest ใน `vite.config.ts`
   - [ ] **5.2 Component Tests**: ทดสอบการทำงานของ `BananaChatbot.tsx` และ `Navbar.tsx`
-  - [ ] **5.3 Build Verification**: ตรวจสอบว่า `npm run build` ผ่าน 100% เสมอก่อน Merge งาน
+  - [x] **5.3 Build Verification**: `npm run build` ผ่าน 100% ไม่มี Error (ยืนยันแล้ว สิงหาคม 2026)
 
 ---
 

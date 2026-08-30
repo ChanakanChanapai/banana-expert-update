@@ -29,19 +29,19 @@
 ### 🌿 Branch แนะนำ: `feature/backend-hybrid-24-7`
 
 ### ⏱️ ช่วงเช้า (09:00 - 12:00) : สถาปัตยกรรม Hybrid Proxy & Fallback Engine
-- [ ] **1.1 ปรับปรุง Serverless Proxy (`api/detect.ts`):**
-  - กำหนด **Timeout Control** ที่เหมาะสม (ปรับจาก 30s เป็น 8–10s เพื่อป้องกัน User รอนานเกินไป)
-  - เพิ่ม **Retry Mechanism** (ยิงซ้ำ 1 ครั้งกรณีเกิด Network Glitch หรือ Timeout ก่อนสลับโหมด)
+- [x] **1.1 ปรับปรุง Serverless Proxy (`api/detect.ts`):**
+  - กำหนด **Timeout Control** 9 วินาที (ปรับจาก 30s เป็น 9s เพื่อป้องกัน User รอนานเกินไป)
+  - เพิ่ม **Retry Mechanism** (ยิงซ้ำ 1 ครั้งกรณีเกิด Network Glitch หรือ Timeout ก่อนสลับโหมด) พร้อมหน่วง 1.5s
   - เพิ่มการดักจับ HTTP Status Codes (เช่น `502 Bad Gateway`, `503 Service Unavailable`, `504 Gateway Timeout`)
-- [ ] **1.2 Smart Fallback Engine:**
-  - สร้าง Rule-based / Smart Local Analysis ที่ฝั่ง Proxy / Frontend เพื่อคืนผลลัพธ์การประเมินเบื้องต้นหาก Render Backend ไม่ตอบสนอง
+- [x] **1.2 Smart Fallback Engine:**
+  - สร้าง `generateFallbackResult()` คืนผลลัพธ์การประเมินเบื้องต้นหาก Render Backend ไม่ตอบสนอง
   - แนบ Response Flag `"is_fallback": true` และ `"server_status": "hybrid_standby"` เพื่อให้ Frontend รับทราบ
 
 ### ⏱️ ช่วงบ่าย (13:00 - 18:00) : Client-Side Detection UX & Resilience
-- [ ] **1.3 ปรับปรุง Frontend AI Detection (`src/pages/Index.tsx`):**
-  - เพิ่ม **Server Status Badge** (เช่น 🟢 *ระบบ AI ทำงานปกติ*, 🟡 *ระบบสำรองข้อมูลพร้อมใช้งาน*)
-  - ปรับปรุง Loading State ให้มีคำอธิบายกระบวนการสแกนที่น่าสนใจ (เช่น *"กำลังเชื่อมต่อเซิร์ฟเวอร์..."*, *"กำลังวิเคราะห์ภาพ..."*)
-  - รองรับ Error Recovery นุ่มนวล ไม่แสดงหน้าจอว่างเปล่า (Empty State)
+- [x] **1.3 ปรับปรุง Frontend AI Detection (`src/pages/Index.tsx`):**
+  - เพิ่ม **Server Status Badge** (🟢 *AI Server Cloud Online*, 🟡 *โหมดสำรองข้อมูลอัจฉริยะ Hybrid Standby*)
+  - ปรับปรุง Loading State ให้มีคำอธิบายกระบวนการสแกน (เช่น *"กำลังเชื่อมต่อเซิร์ฟเวอร์..."*, *"กำลังวิเคราะห์ภาพ..."*)
+  - รองรับ Error Recovery นุ่มนวล ไม่แสดงหน้าจอว่างเปล่า (Empty State) พร้อม Fallback Warning Banner
 - [ ] **1.4 Chaos Testing (ทดสอบกรณี Server ล่ม):**
   - จำลองการปิดหรือตัดการเชื่อมต่อ Render แล้วตรวจสอบว่าหน้าเว็บยังคงวิเคราะห์ภาพและแสดงคำแนะนำการดูแลรักษาได้ 100%
 
@@ -57,28 +57,24 @@
 ### 🌿 Branch แนะนำ: `feature/chatbot-assistant`
 
 ### ⏱️ ช่วงเช้า (09:00 - 12:00) : ขยายคลังความรู้ (Knowledge Hub) & Intent Matching
-- [ ] **2.1 เพิ่มชุดข้อมูลในคลังความรู้ (`src/lib/chatbot-knowledge.ts`):**
+- [x] **2.1 เพิ่มชุดข้อมูลในคลังความรู้ (`src/lib/chatbot-knowledge.ts`):**
   - 🖥️ **หมวดการใช้งานเว็บไซต์ (Platform Guide):**
     - วิธีสแกนรูปภาพเพื่อตรวจโรคกล้วย
     - วิธีการสั่งจองผลผลิตล่วงหน้า (Pre-order) ใน Marketplace
     - วิธีการสมัครเปิดร้านค้าฟาร์ม และตรวจสอบสถานะอนุมัติ
-  - 🌿 **หมวดโรคพืชและการรักษา (Disease Management):**
-    - โรคตายพราย (Panama Disease), โรคใบจุดซิกาโตก้า, หนอนกอ, ไวรัสใบด่าง
-    - แนวทางการป้องกันและการใช้สารชีวภัณฑ์ / เคมีปลอดภัย
-  - 🍌 **หมวดสายพันธุ์กล้วยและการปลูก (Banana Varieties & Cultivation):**
-    - กล้วยหอมทอง, กล้วยน้ำว้า, กล้วยไข่, กล้วยเล็บมือนาง, กล้วยหิน
-    - สูตรการใส่ปุ๋ยตามระยะเวลา และการจัดการระบบน้ำ
-- [ ] **2.2 ปรับปรุง Token / Keyword Matching Logic:**
-  - เพิ่มระบบตรวจจับคีย์เวิร์ดภาษาไทยแบบยืดหยุ่น (รองรับคำพ้องความหมาย เช่น "จองยังไง", "ซื้อกล้วย", "ขายของ")
-  - ระบบ Fallback เมื่อไม่พบคีย์เวิร์ด พร้อมแสดงตัวเลือกคำถามใกล้เคียง
+  - 🌿 **หมวดโรคพืชและการรักษา (Disease Management):** ใช้ Knowledge Hub เดิมมีข้อมูลสอดคล้องแล้ว
+  - 🍌 **หมวดสายพันธุ์กล้วยและการปลูก (Banana Varieties & Cultivation):** ครอบคลุม 5 สายพันธุ์หลัก, สูตรปุ๋ย และการตัดแต่งหน่อ
+- [x] **2.2 ปรับปรุง Token / Keyword Matching Logic:**
+  - ระบบตรวจจับคีย์เวิร์ดแบบ Weighted Score (ยาว = คะแนนสูง) พร้อม Fallback แสดงตัวเลือกคำถามใกล้เคียง
+  - รองรับคำพ้องความหมาย เช่น "จองยังไง", "ซื้อกล้วย", "ขายของ"
 
 ### ⏱️ ช่วงบ่าย (13:00 - 18:00) : Interactive Chat UI & Quick Action Chips
-- [ ] **2.3 ปรับปรุงหน้าต่างแชท (`src/components/chat/BananaChatbot.tsx`):**
-  - เพิ่ม **Suggested Quick Chips** (ปุ่มลัดคำถามยอดนิยม เช่น *"🌿 กล้วยใบเหลืองเกิดจากอะไร"*, *"🛒 วิธีจองผลผลิต"*, *"🍌 10 พันธุ์กล้วยยอดนิยม"*)
-  - เพิ่ม **In-Message Action Buttons** (ปุ่มลิงก์นำทางในกล่องข้อความ เช่น *"👉 ไปที่หน้าตลาดซื้อขาย"*, *"📷 ไปที่หน้าสแกนโรค"*)
+- [x] **2.3 ปรับปรุงหน้าต่างแชท (`src/components/chat/BananaChatbot.tsx`):**
+  - เพิ่ม **Suggested Quick Pillar Cards** 3 หมวดหลัก (คู่มือเว็บ, คลังความรู้กล้วย, ข้อมูลฟาร์ม) พร้อม Icon และ Description
+  - เพิ่ม **In-Message Action Buttons** (ปุ่มลิงก์นำทางในกล่องข้อความ เช่น *"ไปที่หน้าตลาดซื้อขาย"*, *"ไปที่หน้าสแกนโรค"*)
   - ปรับปรุง Auto Scroll และ Animation การพิมพ์ (Typing indicator)
-- [ ] **2.4 ประสิทธิภาพและการจัดเก็บ (Stateless & Cleanup):**
-  - เคลียร์ State อย่างเหมาะสม ไม่เกิด Memory Leak เมื่อเปิดแชททิ้งไว้
+- [x] **2.4 ประสิทธิภาพและการจัดเก็บ (Stateless & Cleanup):**
+  - Stateless Session สมบูรณ์ ไม่เกิด Memory Leak เมื่อเปิดแชททิ้งไว้
 
 ### 📦 สิ่งที่ส่งมอบเมื่อสิ้นสุด Day 2:
 1. ไฟล์ `src/lib/chatbot-knowledge.ts` ที่ครอบคลุมโรคพืช สายพันธุ์ และวิธีใช้เว็บครบถ้วน
