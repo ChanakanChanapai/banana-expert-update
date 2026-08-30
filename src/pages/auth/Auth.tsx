@@ -35,17 +35,23 @@ const Auth = () => {
   });
 
   useEffect(() => {
-    const checkSession = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
+    // 1. ตรวจสอบ Session ปัจจุบัน
+    supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         navigate("/dashboard", { replace: true });
       }
-    };
+    });
 
-    checkSession();
+    // 2. ฟัง event การเข้าสู่ระบบเพื่อนำทางทันทีแบบไม่มีดีเลย์
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if ((event === "SIGNED_IN" || event === "INITIAL_SESSION") && session) {
+        navigate("/dashboard", { replace: true });
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, [navigate]);
 
   /* ---------------- SUBMIT (จุดที่แก้ไข) ---------------- */

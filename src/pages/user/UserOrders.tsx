@@ -215,14 +215,15 @@ const UserOrders = () => {
       setLoading(true);
 
       const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
+        data: { session },
+      } = await supabase.auth.getSession();
 
-      if (userError || !user) {
-        navigate("/auth/login");
+      if (!session || !session.user) {
+        navigate("/auth/login", { replace: true });
         return;
       }
+
+      const user = session.user;
 
       const [
         shippingRes,

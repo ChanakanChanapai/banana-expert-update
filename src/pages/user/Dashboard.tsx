@@ -94,18 +94,18 @@ const Dashboard = () => {
     try {
       setLoading(true);
       const {
-        data: { user: currentUser },
-        error: authError,
-      } = await supabase.auth.getUser();
+        data: { session },
+      } = await supabase.auth.getSession();
 
-      if (authError || !currentUser) {
-        navigate("/auth/login");
+      if (!session || !session.user) {
+        navigate("/auth/login", { replace: true });
         return;
       }
 
+      const currentUser = session.user;
       setUser(currentUser);
 
-      const [roles, profileData] = await Promise.all([
+      const [roles] = await Promise.all([
         fetchUserRoles(currentUser.id),
         loadProfile(currentUser.id),
       ]);
@@ -116,7 +116,6 @@ const Dashboard = () => {
       await loadDashboardData(currentUser.id);
     } catch (err) {
       console.error("Dashboard init error:", err);
-      toast.error("ไม่สามารถโหลดข้อมูลแดชบอร์ดได้");
     } finally {
       setLoading(false);
     }

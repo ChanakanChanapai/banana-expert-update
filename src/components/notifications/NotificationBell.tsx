@@ -46,15 +46,16 @@ export const NotificationBell = () => {
     try {
       setLoading(true);
       const {
-        data: { user },
-      } = await supabase.auth.getUser();
+        data: { session },
+      } = await supabase.auth.getSession();
 
-      if (!user) {
+      if (!session || !session.user) {
         setNotifications([]);
         setUserId(null);
         return;
       }
 
+      const user = session.user;
       setUserId(user.id);
 
       // ดึงการแจ้งเตือนจริงจากตาราง notifications
