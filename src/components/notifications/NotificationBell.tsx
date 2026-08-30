@@ -11,6 +11,8 @@ import {
   ChevronRight,
   Sparkles,
   Inbox,
+  XCircle,
+  PackageCheck
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -142,7 +144,7 @@ export const NotificationBell = () => {
     try {
       const localReadIds = getLocalReadIds(currentUserId);
 
-      const [notifsRes, userResRes, userOrdersRes, farmResRes] =
+      const [notifsRes, userResRes, userOrdersRes, farmResRes, farmOrdersRes] =
         await Promise.all([
           // 1. ตาราง notifications หลัก
           supabase
@@ -152,7 +154,7 @@ export const NotificationBell = () => {
             .order("created_at", { ascending: false })
             .limit(30),
 
-          // 2. รายการจองของผู้ใช้ (ฝั่งผู้ซื้อ)
+          // 2. รายการจองของผู้ใช้ (ฝั่งผู้ซื้อ: จองสำเร็จ / ฟาร์มยืนยัน / ฟาร์มปฏิเสธ)
           supabase
             .from("reservations")
             .select(
@@ -173,9 +175,9 @@ export const NotificationBell = () => {
             )
             .eq("user_id", currentUserId)
             .order("created_at", { ascending: false })
-            .limit(10),
+            .limit(15),
 
-          // 3. รายการสั่งซื้อของผู้ใช้ (ฝั่งผู้ซื้อ)
+          // 3. คำสั่งซื้อของผู้ใช้ (ฝั่งผู้ซื้อ: ฟาร์มยืนยัน / กำลังจัดส่ง / ยืนยันการจัดส่ง)
           supabase
             .from("orders")
             .select(
@@ -198,9 +200,9 @@ export const NotificationBell = () => {
             )
             .eq("user_id", currentUserId)
             .order("created_at", { ascending: false })
-            .limit(10),
+            .limit(15),
 
-          // 4. รายการจองใหม่ที่ส่งมายังฟาร์มของผู้ใช้ (ฝั่งชาวสวน)
+          // 4. รายการจองใหม่ที่ส่งมายังฟาร์มของผู้ใช้ (ฝั่งชาวสวน: มีลูกค้าจองเข้ามา)
           supabase
             .from("reservations")
             .select(
@@ -221,12 +223,34 @@ export const NotificationBell = () => {
             .eq("products.farm_id", currentUserId)
             .eq("status", "pending")
             .order("created_at", { ascending: false })
+            .limit(15),
+
+          // 5. คำสั่งซื้อที่จัดส่งแล้วสำหรับฟาร์มของผู้ใช้ (ฝั่งชาวสวน: ลูกค้ายืนยันรับของ)
+          supabase
+            .from("orders")
+            .select(
+              `
+              id,
+              status,
+              quantity,
+              total_price,
+              created_at,
+              products!inner (
+                name,
+                unit,
+                farm_id
+              )
+            `
+            )
+            .eq("products.farm_id", currentUserId)
+            .eq("status", "delivered")
+            .order("created_at", { ascending: false })
             .limit(10),
         ]);
 
       const itemsMap = new Map<string, NotificationItem>();
 
-      // A. ใส่ข้อมูลจากตาราง notifications จริง
+      // A. ข้อมูลจากตาราง notifications โดยตรง
       if (notifsRes.data) {
         (notifsRes.data as NotificationItem[]).forEach((n) => {
           itemsMap.set(n.id, {
@@ -236,24 +260,42 @@ export const NotificationBell = () => {
         });
       }
 
-      // B. ผสานข้อมูลรายการจองของผู้ซื้อ (Buyer Reservations)
+      // B. 🍌 กรณีที่ 1 & 2 (ฝั่งผู้ซื้อ): จองสำเร็จ (Pending) / ฟาร์มยืนยัน (Confirmed) / ฟาร์มปฏิเสธ (Cancelled)
       if (userResRes.data) {
         userResRes.data.forEach((r: any) => {
           const fakeId = `res-${r.id}`;
           if (!itemsMap.has(fakeId)) {
             const pName = r.products?.name || "ผลผลิตกล้วย";
             const fName = r.products?.farm_profiles?.farm_name || "ฟาร์ม";
-            const isRead = localReadIds.has(fakeId) || r.status !== "pending";
+            const isPending = r.status === "pending";
+            const isConfirmed = r.status === "confirmed";
+            const isCancelled = r.status === "cancelled";
+
+            let title = "คำขอสั่งจองผลผลิต";
+            let msg = `คุณได้สั่งจอง "${pName}" จำนวน ${r.quantity} ${r.products?.unit || "ชิ้น"}`;
+            let notifType = r.status;
+
+            if (isPending) {
+              title = "ส่งคำขอสั่งจองผลผลิตสำเร็จ! 🍌";
+              msg = `คุณได้สั่งจอง "${pName}" (${r.quantity} ${r.products?.unit || "ชิ้น"}) จาก ${fName} ยอดรวม ฿${Number(r.total_price || 0).toLocaleString()} (สถานะ: รอยืนยันจากฟาร์ม)`;
+              notifType = "pending";
+            } else if (isConfirmed) {
+              title = "ฟาร์มยืนยันคำสั่งจองแล้ว! ✅";
+              msg = `สวน ${fName} ได้ยืนยันคำสั่งจอง "${pName}" (${r.quantity} ${r.products?.unit || "ชิ้น"}) ยอดรวม ฿${Number(r.total_price || 0).toLocaleString()} เรียบร้อยแล้ว`;
+              notifType = "confirmed";
+            } else if (isCancelled) {
+              title = "ฟาร์มปฏิเสธ/ยกเลิกคำสั่งจอง ❌";
+              msg = `รายการสั่งจอง "${pName}" (${r.quantity} ${r.products?.unit || "ชิ้น"}) ไม่ได้รับการยืนยันหรือถูกยกเลิกแล้ว`;
+              notifType = "cancelled";
+            }
+
+            const isRead = localReadIds.has(fakeId);
+
             itemsMap.set(fakeId, {
               id: fakeId,
-              title:
-                r.status === "pending"
-                  ? "คำขอสั่งจองผลผลิต (รอยืนยัน) 🍌"
-                  : r.status === "confirmed"
-                  ? "คำสั่งจองได้รับการยืนยันแล้ว"
-                  : "คำขอสั่งจองผลผลิต",
-              message: `คุณได้สั่งจอง "${pName}" (${r.quantity} ${r.products?.unit || "ชิ้น"}) จาก ${fName} ยอดรวม ฿${Number(r.total_price || 0).toLocaleString()}`,
-              type: r.status === "pending" ? "reservation_created" : r.status,
+              title,
+              message: msg,
+              type: notifType,
               read: isRead,
               link: "/dashboard/orders",
               created_at: r.created_at,
@@ -263,30 +305,41 @@ export const NotificationBell = () => {
         });
       }
 
-      // C. ผสานข้อมูลคำสั่งซื้อของผู้ซื้อ (Buyer Orders)
+      // C. 🚚 กรณีที่ 3 & 4 (ฝั่งผู้ซื้อ): กำลังจัดส่ง (Shipped) / ยืนยันการจัดส่ง (Delivered)
       if (userOrdersRes.data) {
         userOrdersRes.data.forEach((o: any) => {
           const fakeId = `ord-${o.id}`;
           if (!itemsMap.has(fakeId)) {
             const pName = o.products?.name || "ผลผลิตกล้วย";
+            const fName = o.products?.farm_profiles?.farm_name || "ฟาร์ม";
             const isShipped = o.status === "shipped";
-            const isDelivered = o.status === "delivered";
+            const isDelivered = o.status === "delivered" || o.status === "reviewed";
             const isConfirmed = o.status === "confirmed";
+            const isCancelled = o.status === "cancelled";
 
-            const title = isShipped
-              ? `ผลผลิตกำลังจัดส่ง! 🚚 (${o.carrier || "ขนส่ง"} ${o.tracking_number || ""})`
-              : isDelivered
-              ? "ได้รับผลผลิตเรียบร้อยแล้ว ⭐"
-              : isConfirmed
-              ? "ฟาร์มยืนยันคำสั่งซื้อแล้ว! ✅"
-              : `สถานะคำสั่งซื้อ: ${o.status}`;
+            let title = `สถานะคำสั่งซื้อ: ${o.status}`;
+            let msg = `คำสั่งซื้อ "${pName}" จำนวน ${o.quantity} ${o.products?.unit || "ชิ้น"}`;
 
-            const isRead = localReadIds.has(fakeId) || isDelivered;
+            if (isShipped) {
+              title = `ผลผลิตกำลังจัดส่ง! 🚚 (${o.carrier || "ขนส่ง"} ${o.tracking_number || ""})`;
+              msg = `ผลผลิต "${pName}" จัดส่งแล้วโดย ${o.carrier || "ขนส่ง"} หมายเลขพัสดุ: ${o.tracking_number || "-"}`;
+            } else if (isDelivered) {
+              title = "ยืนยันการจัดส่ง / ได้รับผลผลิตเรียบร้อยแล้ว 📦";
+              msg = `คำสั่งซื้อ "${pName}" ได้รับการจัดส่งสำเร็จเรียบร้อยแล้ว สามารถให้คะแนนและรีวิวสวน ${fName} ได้`;
+            } else if (isConfirmed) {
+              title = "ฟาร์มยืนยันคำสั่งซื้อแล้ว! ✅";
+              msg = `สวน ${fName} ยืนยันคำสั่งซื้อ "${pName}" (${o.quantity} ${o.products?.unit || "ชิ้น"}) ยอดรวม ฿${Number(o.total_price || 0).toLocaleString()}`;
+            } else if (isCancelled) {
+              title = "คำสั่งซื้อถูกยกเลิก ❌";
+              msg = `คำสั่งซื้อ "${pName}" ถูกยกเลิกเรียบร้อยแล้ว`;
+            }
+
+            const isRead = localReadIds.has(fakeId);
 
             itemsMap.set(fakeId, {
               id: fakeId,
               title,
-              message: `คำสั่งซื้อ "${pName}" จำนวน ${o.quantity} ${o.products?.unit || "ชิ้น"} ยอดรวม ฿${Number(o.total_price || 0).toLocaleString()}`,
+              message: msg,
               type: o.status,
               read: isRead,
               link: "/dashboard/orders",
@@ -297,7 +350,7 @@ export const NotificationBell = () => {
         });
       }
 
-      // D. ผสานข้อมูลคำขอสั่งจองใหม่สำหรับเจ้าของสวน (Farmer Alerts)
+      // D. 🧑‍🌾 (ฝั่งชาวสวน): มีคำขอสั่งจองใหม่จากลูกค้า
       if (farmResRes.data) {
         farmResRes.data.forEach((fr: any) => {
           const fakeId = `farm-res-${fr.id}`;
@@ -315,6 +368,28 @@ export const NotificationBell = () => {
               link: "/farm/orders",
               created_at: fr.created_at,
               related_order_id: fr.id,
+            });
+          }
+        });
+      }
+
+      // E. 🧑‍🌾 (ฝั่งชาวสวน): ลูกค้ายืนยันรับผลผลิต
+      if (farmOrdersRes.data) {
+        farmOrdersRes.data.forEach((fo: any) => {
+          const fakeId = `farm-ord-${fo.id}`;
+          if (!itemsMap.has(fakeId)) {
+            const pName = fo.products?.name || "ผลผลิต";
+            const isRead = localReadIds.has(fakeId);
+
+            itemsMap.set(fakeId, {
+              id: fakeId,
+              title: "ลูกค้ายืนยันรับผลผลิตเรียบร้อยแล้ว! 📦",
+              message: `ลูกค้าได้รับ "${pName}" (${fo.quantity} ${fo.products?.unit || "ชิ้น"}) เรียบร้อยแล้ว`,
+              type: "delivered",
+              read: isRead,
+              link: "/farm/orders",
+              created_at: fo.created_at,
+              related_order_id: fo.id,
             });
           }
         });
@@ -447,6 +522,20 @@ export const NotificationBell = () => {
         return (
           <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center shrink-0 border border-blue-500/20">
             <Truck className="w-4 h-4" />
+          </div>
+        );
+      case "delivered":
+      case "order_delivered":
+        return (
+          <div className="w-8 h-8 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center shrink-0 border border-purple-500/20">
+            <PackageCheck className="w-4 h-4" />
+          </div>
+        );
+      case "cancelled":
+      case "rejected":
+        return (
+          <div className="w-8 h-8 rounded-xl bg-rose-500/10 text-rose-600 flex items-center justify-center shrink-0 border border-rose-500/20">
+            <XCircle className="w-4 h-4" />
           </div>
         );
       case "review":
