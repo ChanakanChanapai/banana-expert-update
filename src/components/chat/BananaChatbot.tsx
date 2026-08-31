@@ -30,13 +30,6 @@ const BananaChatbot = () => {
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
 
-  // ซ่อน Chat Widget ในหน้า Auth / Login / Reset Password
-  const isAuthPage =
-    location.pathname.startsWith("/auth") || location.pathname === "/reset-password";
-  if (isAuthPage) {
-    return null;
-  }
-
   // Purely Stateless: รีเฟรชหน้าจอแล้วเริ่มต้นใหม่เสมอ ไม่มีการเก็บ Session ค้าง
   const initialWelcomeMessage: ChatMessage = {
     id: "welcome-msg",
@@ -62,6 +55,13 @@ const BananaChatbot = () => {
       setTimeout(() => inputRef.current?.focus(), 150);
     }
   }, [isOpen, messages, isTyping]);
+
+  // ซ่อน Chat Widget ในหน้า Auth / Login / Reset Password
+  const isAuthPage =
+    location.pathname.startsWith("/auth") || location.pathname === "/reset-password";
+  if (isAuthPage) {
+    return null;
+  }
 
   const handleSendMessage = (textToSend?: string) => {
     const query = (textToSend || input).trim();
