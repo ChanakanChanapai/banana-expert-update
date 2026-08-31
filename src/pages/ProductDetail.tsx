@@ -13,6 +13,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
@@ -26,6 +27,12 @@ import {
   Plus,
   MapPin,
   Store,
+  CheckCircle2,
+  Clock,
+  PackageCheck,
+  ArrowRight,
+  XCircle,
+  AlertTriangle,
 } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import ThaiAddressSelector from "@/components/address/ThaiAddressSelector";
@@ -101,6 +108,7 @@ const ProductDetail = () => {
 
     window.scrollTo(0, 0);
     loadProduct(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, navigate]);
 
   const loadProduct = async (productId: string) => {

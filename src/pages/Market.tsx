@@ -3,7 +3,8 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Search, Star, MapPin, X, Package, PackageOpen, ShoppingBag } from "lucide-react"; 
+import { Search, Star, MapPin, X, ShoppingBag } from "lucide-react"; 
+import { toast } from "sonner";
 import Navbar from "@/components/layout/Navbar";
 import { getProductImageUrl } from "@/lib/image-utils";
 import {
@@ -22,7 +23,7 @@ interface FarmProfile {
   rating: number | null;
   profiles?: {
     last_seen: string | null;
-  } | any; 
+  } | null; 
 }
 
 interface Product {
@@ -121,7 +122,7 @@ const Market = () => {
         .eq("is_active", true);
 
       if (error) throw error;
-      setProducts(data as any ?? []);
+      setProducts((data as unknown as Product[]) ?? []);
     } catch (err) {
       console.error("Load products error:", err);
       toast.error("โหลดข้อมูลสินค้าไม่สำเร็จ");
@@ -149,7 +150,7 @@ const Market = () => {
         .limit(3);
 
       if (error) throw error;
-      setTopFarms(data as any ?? []);
+      setTopFarms((data as unknown as FarmProfile[]) ?? []);
     } catch (err) {
       console.error("Load top farms error:", err);
     }
