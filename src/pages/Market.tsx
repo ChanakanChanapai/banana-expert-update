@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Search, Star, MapPin, X, ShoppingBag } from "lucide-react"; 
+import { Search, Star, MapPin, X, ShoppingBag, PackageOpen } from "lucide-react"; 
 import { toast } from "sonner";
 import Navbar from "@/components/layout/Navbar";
 import { getProductImageUrl } from "@/lib/image-utils";
