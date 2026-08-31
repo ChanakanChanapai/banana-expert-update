@@ -33,6 +33,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
+import { getProductImageUrl } from "@/lib/image-utils";
 
 /* ---------- Types ---------- */
 
@@ -702,9 +703,9 @@ const FarmDashboard = () => {
                     <div>
                       {/* Product Thumbnail */}
                       <div className="aspect-video bg-gradient-to-b from-amber-50/80 to-yellow-100/40 relative overflow-hidden flex items-center justify-center border-b border-border/40">
-                        {p.image_url ? (
+                        {getProductImageUrl(p.image_url) ? (
                           <img
-                            src={p.image_url}
+                            src={getProductImageUrl(p.image_url)!}
                             alt={p.name}
                             className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                             onError={(e) => {
@@ -718,7 +719,7 @@ const FarmDashboard = () => {
 
                         <div
                           className={`w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-amber-50 to-amber-100/50 p-4 text-center ${
-                            p.image_url ? "hidden" : "flex"
+                            getProductImageUrl(p.image_url) ? "hidden" : "flex"
                           }`}
                         >
                           <div className="w-12 h-12 rounded-2xl bg-amber-200/70 border border-amber-300 flex items-center justify-center mb-1.5 shadow-2xs">

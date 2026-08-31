@@ -35,6 +35,7 @@ import {
 } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import ThaiAddressSelector from "@/components/address/ThaiAddressSelector";
+import { getProductImageUrl } from "@/lib/image-utils";
 
 /* ---------- Types ---------- */
 
@@ -359,9 +360,9 @@ const ProductDetail = () => {
 
         <div className="grid md:grid-cols-2 gap-8 mt-6">
           <div className="aspect-square bg-white rounded-3xl flex items-center justify-center overflow-hidden border border-amber-200/80 shadow-md relative group">
-            {product.image_url && !imageError ? (
+            {getProductImageUrl(product.image_url) && !imageError ? (
               <img
-                src={product.image_url}
+                src={getProductImageUrl(product.image_url)!}
                 alt={product.name}
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                 onError={() => setImageError(true)}

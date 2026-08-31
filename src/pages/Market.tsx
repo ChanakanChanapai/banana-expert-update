@@ -4,8 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Search, Star, MapPin, X, Package, PackageOpen, ShoppingBag } from "lucide-react"; 
-import { toast } from "sonner";
 import Navbar from "@/components/layout/Navbar";
+import { getProductImageUrl } from "@/lib/image-utils";
 import {
   Select,
   SelectContent,
@@ -300,9 +300,9 @@ const Market = () => {
                 >
                   {/* Image Container */}
                   <div className="aspect-[4/3] bg-amber-50/60 relative overflow-hidden flex items-center justify-center">
-                    {p.image_url ? (
+                    {getProductImageUrl(p.image_url) ? (
                       <img 
-                        src={p.image_url} 
+                        src={getProductImageUrl(p.image_url)!} 
                         alt={p.name} 
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                         onError={(e) => {
@@ -314,7 +314,7 @@ const Market = () => {
                     ) : null}
                     
                     <div 
-                      className={`image-fallback w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-amber-50 to-yellow-50/60 p-4 ${p.image_url ? "hidden" : "flex"}`}
+                      className={`image-fallback w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-amber-50 to-yellow-50/60 p-4 ${getProductImageUrl(p.image_url) ? "hidden" : "flex"}`}
                     >
                       <div className="w-12 h-12 rounded-2xl bg-amber-100/90 border border-amber-200 flex items-center justify-center mb-1.5 shadow-2xs">
                         <ShoppingBag className="w-6 h-6 text-amber-600" />

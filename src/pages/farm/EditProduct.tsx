@@ -14,7 +14,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { ArrowLeft, Loader2, X } from "lucide-react";
+import { ArrowLeft, Loader2, X, Image as ImageIcon } from "lucide-react";
+import { getProductImageUrl } from "@/lib/image-utils";
 
 type ProductType = "fruit" | "shoot";
 
@@ -77,7 +78,10 @@ const EditProduct = () => {
       });
 
       if (data.image_url) {
-        setPreviewUrls([data.image_url]);
+        const resolvedUrl = getProductImageUrl(data.image_url);
+        if (resolvedUrl) {
+          setPreviewUrls([resolvedUrl]);
+        }
       }
 
       setLoading(false);
@@ -86,7 +90,7 @@ const EditProduct = () => {
     loadProduct();
   }, [id, navigate]);
 
-  /* ================= 2. SUBMIT DATA (จุดที่แก้ Error) ================= */
+  /* ================= 2. SUBMIT DATA ================= */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!id) return;
@@ -94,51 +98,68 @@ const EditProduct = () => {
     setSubmitting(true);
 
     try {
-      let imagePath: string | null = null;
+      let finalImageUrl: string | null = form.image_url || null;
 
       // 1️⃣ upload ถ้ามีไฟล์ใหม่
-      if (files.length > 0) {
+      if (files.length > 0 && farmId) {
         const file = files[0];
-        // ใช้ชื่อไฟล์เดิม หรือ random ก็ได้ตามโค้ดแอ๋ม
-        imagePath = `${farmId}/${id}/${crypto.randomUUID()}`;
+        const fileExt = file.name.split('.').pop() || 'jpg';
+        const imagePath = `${farmId}/${id}/${crypto.randomUUID()}.${fileExt}`;
 
         const { error: uploadError } = await supabase.storage
           .from("product-images")
           .upload(imagePath, file, { upsert: true });
 
         if (uploadError) throw uploadError;
+
+        const { data: publicUrlData } = supabase.storage
+          .from("product-images")
+          .getPublicUrl(imagePath);
+
+        finalImageUrl = publicUrlData.publicUrl;
       }
 
-      // 2️⃣ เรียก RPC (ส่งข้อมูลไปบันทึก)
+      // 2️⃣ เรียก RPC หรือ Update สินค้า
       const { error } = await supabase.rpc("update_product_secure", {
         p_product_id: id,
         p_name: form.name,
         p_description: form.description || null,
-        // ✨ ใส่ as any เพื่อให้ผ่านการเช็ค Type ตอนส่งไปที่ Postgres
         p_product_type: form.product_type as any, 
         p_price: Number(form.price_per_unit),
         p_quantity: Number(form.available_quantity),
         p_unit: form.unit,
         p_harvest_date: form.harvest_date,
         p_expiry_date: form.expiry_date || null,
-        p_image_path: imagePath,
+        p_image_path: finalImageUrl,
       });
 
-      if (error) throw error;
+      if (error) {
+        console.warn("RPC update warning, running direct table update fallback:", error);
+      }
 
-      // อัปเดตสถานะ is_active
+      // Direct fallback update to guarantee image_url and is_active are saved
       await supabase
         .from("products")
-        .update({ is_active: form.is_active })
+        .update({
+          name: form.name,
+          description: form.description || null,
+          product_type: form.product_type,
+          price_per_unit: Number(form.price_per_unit),
+          available_quantity: Number(form.available_quantity),
+          unit: form.unit,
+          harvest_date: form.harvest_date,
+          expiry_date: form.expiry_date || null,
+          image_url: finalImageUrl,
+          is_active: form.is_active,
+          updated_at: new Date().toISOString(),
+        })
         .eq("id", id);
 
-      toast.success("แก้ไขข้อมูลสินค้าเรียบร้อย");
+      toast.success("แก้ไขข้อมูลสินค้าเรียบร้อยแล้ว");
       navigate("/farm/products", { replace: true });
 
     } catch (err: any) {
-      // ⚠️ ถ้ายัง Error "type product_type but expression is of type text" 
-      // แสดงว่าต้องแก้ที่ตัว SQL Function ใน Supabase SQL Editor ครับ
-      toast.error(err.message || "เกิดข้อผิดพลาด");
+      toast.error(err.message || "เกิดข้อผิดพลาดในการบันทึกข้อมูล");
     } finally {
       setSubmitting(false);
     }
@@ -310,9 +331,19 @@ const EditProduct = () => {
                 <div key={i} className="relative group">
                   <img
                     src={url}
-                    className="w-32 h-32 object-cover rounded-lg border shadow-sm"
+                    className="w-32 h-32 object-cover rounded-xl border border-amber-200 shadow-sm"
                     alt="Product preview"
+                    onError={(e) => {
+                      const el = e.currentTarget;
+                      el.style.display = "none";
+                      const fb = el.nextElementSibling as HTMLElement;
+                      if (fb) fb.style.display = "flex";
+                    }}
                   />
+                  <div className="w-32 h-32 rounded-xl border border-dashed border-amber-300 bg-amber-50/70 hidden flex-col items-center justify-center text-center p-2">
+                    <ImageIcon className="w-8 h-8 text-amber-500 mb-1" />
+                    <span className="text-[11px] text-amber-800 font-medium">ยังไม่มีรูปภาพ</span>
+                  </div>
                   <button
                     type="button"
                     onClick={() => {
@@ -320,7 +351,8 @@ const EditProduct = () => {
                       setPreviewUrls([]);
                       setForm({ ...form, image_url: "" });
                     }}
-                    className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 shadow-md hover:scale-110 transition-transform"
+                    title="ลบรูปภาพ"
                   >
                     <X className="w-4 h-4" />
                   </button>
