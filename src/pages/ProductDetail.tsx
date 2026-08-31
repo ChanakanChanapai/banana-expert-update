@@ -112,36 +112,44 @@ const ProductDetail = () => {
   const loadProduct = async (productId: string) => {
     setLoading(true);
 
-    const { data, error } = await supabase
-      .from("products")
-      .select(`
-        id,
-        name,
-        description,
-        product_type,
-        price_per_unit,
-        available_quantity,
-        unit,
-        harvest_date,
-        image_url,
-        farm: farm_profiles (
-          id,
-          farm_name,
-          farm_location,
-          user_id
-        )
-      `)
-      .eq("id", productId)
-      .maybeSingle();
+    try {
+      // 1. ดึงข้อมูลสินค้า
+      const { data: prodData, error: prodError } = await supabase
+        .from("products")
+        .select("*")
+        .eq("id", productId)
+        .maybeSingle();
 
-    if (error || !data) {
-      toast.error("ไม่พบสินค้า");
+      if (prodError || !prodData) {
+        console.error("Product query error:", prodError);
+        toast.error("ไม่พบสินค้า");
+        navigate("/market");
+        return;
+      }
+
+      // 2. ดึงข้อมูลฟาร์มจาก farm_profiles
+      let farmInfo: FarmProfile | null = null;
+      if (prodData.farm_id) {
+        const { data: farmData } = await supabase
+          .from("farm_profiles")
+          .select("id, farm_name, farm_location, user_id")
+          .or(`id.eq.${prodData.farm_id},user_id.eq.${prodData.farm_id}`)
+          .maybeSingle();
+
+        farmInfo = farmData as FarmProfile;
+      }
+
+      setProduct({
+        ...prodData,
+        farm: farmInfo,
+      } as Product);
+    } catch (err) {
+      console.error("Load product error:", err);
+      toast.error("เกิดข้อผิดพลาดในการโหลดสินค้า");
       navigate("/market");
-      return;
+    } finally {
+      setLoading(false);
     }
-
-    setProduct(data as Product);
-    setLoading(false);
   };
 
   /* ---------- Load User Address ---------- */
