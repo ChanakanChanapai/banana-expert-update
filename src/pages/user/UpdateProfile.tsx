@@ -393,6 +393,8 @@ const UpdateProfile = () => {
                     <Label className="mb-2 block font-semibold text-sm">ที่ตั้งฟาร์ม <span className="text-destructive">*</span></Label>
                     <ThaiAddressSelector
                       value={farmForm.farm_location}
+                      title="ข้อมูลที่อยู่ที่ตั้งฟาร์ม"
+                      previewLabel="ตัวอย่างที่อยู่ที่ตั้งฟาร์ม:"
                       onChange={(fullAddress) =>
                         setFarmForm((prev) => ({
                           ...prev,

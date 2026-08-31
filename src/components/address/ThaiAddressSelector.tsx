@@ -35,12 +35,16 @@ interface ThaiAddressSelectorProps {
   value: string; // The full address string
   onChange: (fullAddress: string, structured: StructuredAddress) => void;
   label?: string;
+  title?: string;
+  previewLabel?: string;
   disabled?: boolean;
 }
 
 export const ThaiAddressSelector: React.FC<ThaiAddressSelectorProps> = ({
   value,
   onChange,
+  title,
+  previewLabel,
   disabled = false,
 }) => {
   // Address field states
@@ -147,7 +151,7 @@ export const ThaiAddressSelector: React.FC<ThaiAddressSelectorProps> = ({
       {/* Header */}
       <div className="flex items-center gap-2 pb-2.5 border-b border-border/60 text-slate-800 dark:text-slate-200">
         <MapPin className="w-4 h-4 text-amber-500 shrink-0" />
-        <span className="font-bold text-sm sm:text-base">ข้อมูลที่อยู่สำหรับจัดส่ง</span>
+        <span className="font-bold text-sm sm:text-base">{title || "ข้อมูลที่อยู่สำหรับจัดส่ง"}</span>
       </div>
 
       {/* 🏡 Section 1: ข้อมูลบ้านเลขที่ / ถนน / อาคาร */}
@@ -412,7 +416,7 @@ export const ThaiAddressSelector: React.FC<ThaiAddressSelectorProps> = ({
       <div className="rounded-xl bg-amber-50/50 dark:bg-slate-800/40 border border-amber-200/60 dark:border-slate-700/60 p-3.5 text-xs space-y-1.5">
         <div className="text-slate-700 dark:text-slate-300 font-semibold flex items-center gap-1.5">
           <Info className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-          <span>ตัวอย่างที่อยู่จัดส่งที่แสดง:</span>
+          <span>{previewLabel || (title ? `ตัวอย่าง${title}ที่แสดง:` : "ตัวอย่างที่อยู่จัดส่งที่แสดง:")}</span>
         </div>
         <p className="text-slate-800 dark:text-slate-200 font-medium leading-relaxed pl-5">
           {formatFullAddress({
