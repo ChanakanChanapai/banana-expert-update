@@ -159,7 +159,7 @@ export const ThaiAddressSelector: React.FC<ThaiAddressSelectorProps> = ({
               บ้านเลขที่ <span className="text-destructive">*</span>
             </Label>
             <Input
-              placeholder="เช่น 888/347"
+              placeholder="บ้านเลขที่ / ห้องเลขที่"
               value={houseNumber}
               disabled={disabled}
               className="mt-1 h-9 text-sm rounded-xl"
@@ -175,7 +175,7 @@ export const ThaiAddressSelector: React.FC<ThaiAddressSelectorProps> = ({
               หมู่ที่ / อาคาร
             </Label>
             <Input
-              placeholder="เช่น 7 หรือ อาคาร A"
+              placeholder="หมู่ที่ / ชื่ออาคาร"
               value={moo}
               disabled={disabled}
               className="mt-1 h-9 text-sm rounded-xl"
@@ -191,7 +191,7 @@ export const ThaiAddressSelector: React.FC<ThaiAddressSelectorProps> = ({
               ซอย
             </Label>
             <Input
-              placeholder="เช่น สุขุมวิท 55"
+              placeholder="ชื่อซอย"
               value={soi}
               disabled={disabled}
               className="mt-1 h-9 text-sm rounded-xl"
@@ -207,7 +207,7 @@ export const ThaiAddressSelector: React.FC<ThaiAddressSelectorProps> = ({
               ถนน
             </Label>
             <Input
-              placeholder="เช่น สุขุมวิท"
+              placeholder="ชื่อถนน"
               value={road}
               disabled={disabled}
               className="mt-1 h-9 text-sm rounded-xl"
@@ -222,10 +222,10 @@ export const ThaiAddressSelector: React.FC<ThaiAddressSelectorProps> = ({
         {/* Row 2: รายละเอียดเพิ่มเติม / จุดสังเกต */}
         <div>
           <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-            รายละเอียดเพิ่มเติม (เช่น ชื่อหมู่บ้าน, คอนโด, จุดสังเกต)
+            รายละเอียดเพิ่มเติม (ชื่อหมู่บ้าน, คอนโด, จุดสังเกต)
           </Label>
           <Input
-            placeholder="เช่น หมู่บ้านพฤกษา 3 หลังมุม ติดร้านสะดวกซื้อ"
+            placeholder="ระบุรายละเอียดเพิ่มเติม (ถ้ามี)"
             value={detail}
             disabled={disabled}
             className="mt-1 h-9 text-sm rounded-xl"
