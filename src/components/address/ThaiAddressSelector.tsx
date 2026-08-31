@@ -411,31 +411,6 @@ export const ThaiAddressSelector: React.FC<ThaiAddressSelectorProps> = ({
           </div>
         </div>
       </div>
-
-      {/* 📄 Live Formatted Address Preview Box */}
-      <div className="rounded-xl bg-amber-50/50 dark:bg-slate-800/40 border border-amber-200/60 dark:border-slate-700/60 p-3.5 text-xs space-y-1.5">
-        <div className="text-slate-700 dark:text-slate-300 font-semibold flex items-center gap-1.5">
-          <Info className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-          <span>{previewLabel || (title ? `ตัวอย่าง${title}ที่แสดง:` : "ตัวอย่างที่อยู่จัดส่งที่แสดง:")}</span>
-        </div>
-        <p className="text-slate-800 dark:text-slate-200 font-medium leading-relaxed pl-5">
-          {formatFullAddress({
-            houseNumber,
-            moo,
-            soi,
-            road,
-            detail,
-            subdistrict,
-            district,
-            province,
-            zipcode,
-          }) || (
-            <span className="text-muted-foreground italic">
-              (กรุณากรอกข้อมูลที่อยู่ให้ครบถ้วน)
-            </span>
-          )}
-        </p>
-      </div>
     </div>
   );
 };
