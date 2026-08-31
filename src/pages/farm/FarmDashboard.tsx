@@ -695,22 +695,42 @@ const FarmDashboard = () => {
                 const isLowStock = p.available_quantity <= 5;
 
                 return (
-                  <Card
+                    <Card
                     key={p.id}
                     className="rounded-2xl border border-border/80 overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col justify-between bg-card/90"
                   >
                     <div>
                       {/* Product Thumbnail */}
-                      <div className="aspect-video bg-muted relative overflow-hidden flex items-center justify-center">
+                      <div className="aspect-video bg-gradient-to-b from-amber-50/80 to-yellow-100/40 relative overflow-hidden flex items-center justify-center border-b border-border/40">
                         {p.image_url ? (
                           <img
                             src={p.image_url}
                             alt={p.name}
                             className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                            onError={(e) => {
+                              const el = e.currentTarget;
+                              el.style.display = "none";
+                              const fallback = el.nextElementSibling as HTMLElement;
+                              if (fallback) fallback.style.display = "flex";
+                            }}
                           />
-                        ) : (
-                          <Banana className="w-12 h-12 text-primary/30" />
-                        )}
+                        ) : null}
+
+                        <div
+                          className={`w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-amber-50 to-amber-100/50 p-4 text-center ${
+                            p.image_url ? "hidden" : "flex"
+                          }`}
+                        >
+                          <div className="w-12 h-12 rounded-2xl bg-amber-200/70 border border-amber-300 flex items-center justify-center mb-1.5 shadow-2xs">
+                            <Banana className="w-6 h-6 text-amber-700" />
+                          </div>
+                          <span className="text-xs font-bold text-slate-800 line-clamp-1">
+                            {p.name}
+                          </span>
+                          <span className="text-[10px] font-medium text-amber-700/80">
+                            {isFruit ? "กล้วยผลสด" : "หน่อพันธุ์กล้วย"}
+                          </span>
+                        </div>
 
                         {/* Product type badge */}
                         <div className="absolute top-2 left-2">
@@ -791,9 +811,9 @@ const FarmDashboard = () => {
                         variant="ghost"
                         size="sm"
                         onClick={() => navigate(`/market/product/${p.id}`)}
-                        className="rounded-xl text-xs h-8 text-primary hover:bg-primary/10"
+                        className="rounded-xl text-xs h-8 text-primary hover:bg-primary/10 font-medium"
                       >
-                        ดูหน้าร้าน
+                        ดูหน้าสินค้า
                         <ExternalLink className="w-3 h-3 ml-1" />
                       </Button>
                     </div>

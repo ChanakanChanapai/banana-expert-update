@@ -417,15 +417,26 @@ const ProductDetail = () => {
 
             {product.farm && (
               <Card
-                className="p-4 cursor-pointer hover:bg-accent transition"
+                className="p-4 cursor-pointer hover:bg-amber-50/70 border border-amber-200/80 rounded-2xl transition-all shadow-xs flex items-center justify-between group"
                 onClick={() => navigate(`/farm/${product.farm?.id}`)}
               >
-                <div className="font-semibold">
-                  {product.farm.farm_name}
+                <div>
+                  <div className="font-bold text-slate-800 flex items-center gap-1.5 group-hover:text-amber-800 transition-colors">
+                    <Store className="w-4 h-4 text-amber-600" />
+                    {product.farm.farm_name}
+                  </div>
+                  <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                    <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                    {product.farm.farm_location}
+                  </div>
                 </div>
-                <div className="text-sm text-muted-foreground">
-                  {product.farm.farm_location}
-                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-xl border-amber-300 text-amber-800 hover:bg-amber-100 text-xs font-semibold shrink-0"
+                >
+                  ดูหน้าร้านค้า &rarr;
+                </Button>
               </Card>
             )}
 

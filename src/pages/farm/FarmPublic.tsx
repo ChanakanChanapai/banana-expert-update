@@ -63,30 +63,46 @@ const FarmPublic = () => {
     try {
       setLoading(true);
 
-      // ดึงข้อมูลฟาร์มพร้อมเช็คเวลาออนไลน์
+      // 1. ดึงข้อมูลฟาร์ม
       const { data: farmData, error: farmError } = await supabase
         .from("farm_profiles")
-        .select(`
-          *,
-          profiles: user_id (
-            last_seen
-          )
-        `)
+        .select("*")
         .eq("id", farmId)
-        .single();
+        .maybeSingle();
 
-      if (farmError) throw farmError;
-      setFarm(farmData as any);
+      if (farmError || !farmData) {
+        console.error("Farm not found:", farmError);
+        setFarm(null);
+        return;
+      }
 
-      // ดึงสินค้าของฟาร์มนี้
+      // 2. ดึง last_seen จาก profiles (ถ้ามี user_id)
+      let lastSeen = null;
+      if (farmData.user_id) {
+        const { data: profData } = await supabase
+          .from("profiles")
+          .select("last_seen")
+          .eq("id", farmData.user_id)
+          .maybeSingle();
+        lastSeen = profData?.last_seen || null;
+      }
+
+      setFarm({
+        ...farmData,
+        profiles: { last_seen: lastSeen },
+      });
+
+      // 3. ดึงสินค้าของฟาร์มนี้
       const { data: productsData, error: prodError } = await supabase
         .from("products")
         .select("*")
         .eq("farm_id", farmId)
         .eq("is_active", true);
 
-      if (prodError) throw prodError;
-      
+      if (prodError) {
+        console.error("Products query error:", prodError);
+      }
+
       setProducts(
         (productsData ?? []).filter(
           (p: Product) => Number(p.available_quantity ?? 0) > 0
