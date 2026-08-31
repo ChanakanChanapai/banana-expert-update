@@ -8,7 +8,6 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
-    allowedHosts: true,
     // ✅ เพิ่มตรงนี้ครับ
     proxy: {
       '/api': {

@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Star, Loader2, MapPin, Package } from "lucide-react";
+import { getProductImageUrl } from "@/lib/image-utils";
 
 /* ---------- Types ---------- */
 interface FarmProfile {
@@ -63,11 +64,11 @@ const FarmPublic = () => {
     try {
       setLoading(true);
 
-      // 1. ดึงข้อมูลฟาร์ม
+      // 1. ดึงข้อมูลฟาร์ม (รองรับทั้ง farm_profile.id และ user_id)
       const { data: farmData, error: farmError } = await supabase
         .from("farm_profiles")
         .select("*")
-        .eq("id", farmId)
+        .or(`id.eq.${farmId},user_id.eq.${farmId}`)
         .maybeSingle();
 
       if (farmError || !farmData) {
@@ -92,11 +93,11 @@ const FarmPublic = () => {
         profiles: { last_seen: lastSeen },
       });
 
-      // 3. ดึงสินค้าของฟาร์มนี้
+      // 3. ดึงสินค้าของฟาร์มนี้ (รองรับ farm_id ที่เก็บ farm_profiles.id หรือ user_id)
       const { data: productsData, error: prodError } = await supabase
         .from("products")
         .select("*")
-        .eq("farm_id", farmId)
+        .or(`farm_id.eq.${farmData.id},farm_id.eq.${farmData.user_id || farmData.id}`)
         .eq("is_active", true);
 
       if (prodError) {
@@ -199,9 +200,9 @@ const FarmPublic = () => {
                 onClick={() => navigate(`/market/product/${p.id}`)}
               >
                 <div className="aspect-video bg-amber-50/60 relative overflow-hidden flex items-center justify-center">
-                  {p.image_url ? (
+                  {getProductImageUrl(p.image_url) ? (
                     <img
-                      src={p.image_url}
+                      src={getProductImageUrl(p.image_url)!}
                       className="w-full h-full object-cover"
                       alt={p.name}
                       onError={(e) => {
@@ -212,7 +213,7 @@ const FarmPublic = () => {
                     />
                   ) : null}
                   
-                  <div className={`image-fallback w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-amber-50 to-yellow-50/60 p-4 ${p.image_url ? "hidden" : "flex"}`}>
+                  <div className={`image-fallback w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-amber-50 to-yellow-50/60 p-4 ${getProductImageUrl(p.image_url) ? "hidden" : "flex"}`}>
                     <Package className="w-10 h-10 text-amber-500 mb-1" />
                     <span className="text-xs font-bold text-slate-700 truncate max-w-[90%]">{p.name}</span>
                   </div>
