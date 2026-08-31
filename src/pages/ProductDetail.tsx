@@ -182,23 +182,26 @@ const ProductDetail = () => {
 
     const user = session.user;
 
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("full_name, phone, address")
-      .eq("id", user.id)
-      .maybeSingle();
+    try {
+      const { data } = await supabase
+        .from("profiles")
+        .select("full_name, phone, address")
+        .eq("id", user.id)
+        .maybeSingle();
 
-    if (error) {
-      toast.error("โหลดที่อยู่ไม่สำเร็จ");
-      return false;
-    }
-
-    if (data?.address) {
-      setSavedFullName(data.full_name || null);
-      setSavedPhone(data.phone || null);
-      setSavedAddress(data.address);
-      setAddressType("saved");
-    } else {
+      if (data?.address) {
+        setSavedFullName(data.full_name || null);
+        setSavedPhone(data.phone || null);
+        setSavedAddress(data.address);
+        setAddressType("saved");
+      } else {
+        setSavedFullName(data?.full_name || null);
+        setSavedPhone(data?.phone || null);
+        setSavedAddress(null);
+        setAddressType("new");
+      }
+    } catch (e) {
+      console.warn("Could not load user saved profile address:", e);
       setSavedAddress(null);
       setAddressType("new");
     }

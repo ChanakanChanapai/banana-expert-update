@@ -53,6 +53,8 @@ const App = () => (
           {/* 🛒 Market & Products */}
           <Route path="/market" element={<Market />} />
           <Route path="/market/product/:id" element={<ProductDetail />} />
+          <Route path="/market/:id" element={<ProductDetail />} />
+          <Route path="/product/:id" element={<ProductDetail />} />
 
           {/* 👤 User & Dashboard */}
           <Route path="/dashboard" element={<Dashboard />} />
