@@ -24,14 +24,8 @@ import {
   ShoppingBag,
   Minus,
   Plus,
-  CheckCircle2,
-  XCircle,
-  Clock,
   MapPin,
   Store,
-  PackageCheck,
-  AlertTriangle,
-  ArrowRight
 } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import ThaiAddressSelector from "@/components/address/ThaiAddressSelector";
