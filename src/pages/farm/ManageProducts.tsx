@@ -13,6 +13,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { toast } from "sonner";
+import { Switch } from "@/components/ui/switch";
 import {
   ArrowLeft,
   Plus,
@@ -93,6 +94,38 @@ const ManageProducts = () => {
 
     if (error) throw error;
     setProducts(data || []);
+  };
+
+  const handleToggleActive = async (productId: string, currentStatus: boolean) => {
+    const newStatus = !currentStatus;
+    // Optimistic UI update
+    setProducts((prev) =>
+      prev.map((p) => (p.id === productId ? { ...p, is_active: newStatus } : p))
+    );
+
+    try {
+      const { error } = await supabase
+        .from("products")
+        .update({ is_active: newStatus, updated_at: new Date().toISOString() })
+        .eq("id", productId);
+
+      if (error) {
+        // Rollback on error
+        setProducts((prev) =>
+          prev.map((p) => (p.id === productId ? { ...p, is_active: currentStatus } : p))
+        );
+        toast.error("ไม่สามารถเปลี่ยนสถานะสินค้าได้");
+      } else {
+        toast.success(
+          newStatus ? "เปิดรับจองสินค้าแล้ว (Active)" : "ปิดรับจองสินค้าชั่วคราวแล้ว (Inactive)"
+        );
+      }
+    } catch {
+      setProducts((prev) =>
+        prev.map((p) => (p.id === productId ? { ...p, is_active: currentStatus } : p))
+      );
+      toast.error("เกิดข้อผิดพลาดในการเปลี่ยนสถานะ");
+    }
   };
 
   const handleDelete = async (productId: string) => {
@@ -198,21 +231,22 @@ const ManageProducts = () => {
                       {new Date(p.harvest_date).toLocaleDateString()}
                     </TableCell>
                     <TableCell>
-                      <div className="flex justify-center">
-                        {p.is_active ? (
-                          <Badge 
-                            className="bg-emerald-600 hover:bg-emerald-600 text-white font-semibold whitespace-nowrap px-3 py-1 shadow-sm"
-                          >
-                            Active
-                          </Badge>
-                        ) : (
-                          <Badge 
-                            variant="secondary"
-                            className="bg-slate-200 text-slate-600 dark:bg-slate-800 dark:text-slate-400 font-semibold whitespace-nowrap px-3 py-1"
-                          >
-                            Inactive
-                          </Badge>
-                        )}
+                      <div className="flex items-center justify-center gap-2">
+                        <Switch
+                          checked={p.is_active}
+                          onCheckedChange={() => handleToggleActive(p.id, p.is_active)}
+                          className="data-[state=checked]:bg-emerald-600 cursor-pointer"
+                          aria-label="สลับสถานะเปิด-ปิดรับจอง"
+                        />
+                        <span
+                          className={`text-xs select-none min-w-[50px] font-semibold ${
+                            p.is_active
+                              ? "text-emerald-700 font-bold"
+                              : "text-slate-400"
+                          }`}
+                        >
+                          {p.is_active ? "Active" : "Inactive"}
+                        </span>
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
