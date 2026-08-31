@@ -122,21 +122,36 @@ const ProductDetail = () => {
 
       if (prodError || !prodData) {
         console.error("Product query error:", prodError);
-        toast.error("ไม่พบสินค้า");
+        toast.error("ไม่พบข้อมูลสินค้า");
         navigate("/market");
         return;
       }
 
-      // 2. ดึงข้อมูลฟาร์มจาก farm_profiles
+      // 2. ดึงข้อมูลฟาร์มจาก farm_profiles อย่างปลอดภัย
       let farmInfo: FarmProfile | null = null;
       if (prodData.farm_id) {
-        const { data: farmData } = await supabase
-          .from("farm_profiles")
-          .select("id, farm_name, farm_location, user_id")
-          .or(`id.eq.${prodData.farm_id},user_id.eq.${prodData.farm_id}`)
-          .maybeSingle();
+        try {
+          const { data: farmByUser } = await supabase
+            .from("farm_profiles")
+            .select("id, farm_name, farm_location, user_id")
+            .eq("user_id", prodData.farm_id)
+            .maybeSingle();
 
-        farmInfo = farmData as FarmProfile;
+          if (farmByUser) {
+            farmInfo = farmByUser as FarmProfile;
+          } else {
+            const { data: farmById } = await supabase
+              .from("farm_profiles")
+              .select("id, farm_name, farm_location, user_id")
+              .eq("id", prodData.farm_id)
+              .maybeSingle();
+            if (farmById) {
+              farmInfo = farmById as FarmProfile;
+            }
+          }
+        } catch (farmErr) {
+          console.warn("Farm lookup warning:", farmErr);
+        }
       }
 
       setProduct({
